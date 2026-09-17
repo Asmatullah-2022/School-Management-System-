@@ -1,13 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-react";
 
 export interface Column<T> {
   key: string;
   header: string;
   render: (row: T) => React.ReactNode;
   hideOnMobile?: boolean;
+  /** Enables click-to-sort on this column's header. */
+  sortValue?: (row: T) => string | number;
 }
 
 export function DataTable<T>({
@@ -17,6 +19,7 @@ export function DataTable<T>({
   emptyLabel = "No records found.",
   pageSize = 8,
   rowKey,
+  filters,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -24,9 +27,12 @@ export function DataTable<T>({
   emptyLabel?: string;
   pageSize?: number;
   rowKey: (row: T) => string;
+  /** Extra filter controls rendered next to the search box. */
+  filters?: React.ReactNode;
 }) {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<{ key: string; dir: "asc" | "desc" } | null>(null);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return rows;
@@ -34,26 +40,51 @@ export function DataTable<T>({
     return rows.filter((r) => searchKeys(r).toLowerCase().includes(q));
   }, [rows, query, searchKeys]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const sorted = useMemo(() => {
+    if (!sort) return filtered;
+    const column = columns.find((c) => c.key === sort.key);
+    if (!column?.sortValue) return filtered;
+    const copy = [...filtered];
+    copy.sort((a, b) => {
+      const av = column.sortValue!(a);
+      const bv = column.sortValue!(b);
+      const cmp = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv));
+      return sort.dir === "asc" ? cmp : -cmp;
+    });
+    return copy;
+  }, [filtered, sort, columns]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const currentPage = Math.min(page, totalPages);
-  const paged = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paged = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const toggleSort = (key: string) => {
+    setSort((prev) => {
+      if (!prev || prev.key !== key) return { key, dir: "asc" };
+      if (prev.dir === "asc") return { key, dir: "desc" };
+      return null;
+    });
+  };
 
   return (
     <div>
       <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:max-w-xs">
-          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-          <input
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search…"
-            className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
-          />
+        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative w-full sm:max-w-xs">
+            <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search…"
+              className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
+            />
+          </div>
+          {filters}
         </div>
-        <p className="text-xs text-muted">{filtered.length} record{filtered.length === 1 ? "" : "s"}</p>
+        <p className="text-xs text-muted">{sorted.length} record{sorted.length === 1 ? "" : "s"}</p>
       </div>
 
       {paged.length === 0 ? (
@@ -66,7 +97,26 @@ export function DataTable<T>({
                 <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                   {columns.map((c) => (
                     <th key={c.key} className={`px-4 py-2.5 font-medium ${c.hideOnMobile ? "hidden sm:table-cell" : ""}`}>
-                      {c.header}
+                      {c.sortValue ? (
+                        <button
+                          type="button"
+                          onClick={() => toggleSort(c.key)}
+                          className="inline-flex items-center gap-1 hover:text-foreground"
+                        >
+                          {c.header}
+                          {sort?.key === c.key ? (
+                            sort.dir === "asc" ? (
+                              <ArrowUp size={12} />
+                            ) : (
+                              <ArrowDown size={12} />
+                            )
+                          ) : (
+                            <ArrowUpDown size={12} className="opacity-40" />
+                          )}
+                        </button>
+                      ) : (
+                        c.header
+                      )}
                     </th>
                   ))}
                 </tr>

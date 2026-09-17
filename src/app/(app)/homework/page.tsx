@@ -1,5 +1,6 @@
 import { listHomework } from "@/lib/data/records";
-import { listClasses, listSections, listSubjects } from "@/lib/data/academics";
+import { listClasses, listSections } from "@/lib/data/academics";
+import { listSubjects } from "@/lib/data/subjects";
 import { listTeachers } from "@/lib/data/teachers";
 import { Card } from "@/components/ui/card";
 

@@ -49,3 +49,7 @@ export async function getSession(): Promise<Session | null> {
 export function listDemoUsers() {
   return demoUsers;
 }
+
+export function isSchoolAdmin(role: Profile["role"]): boolean {
+  return role === "super_admin" || role === "school_admin";
+}

@@ -2,7 +2,7 @@ import "server-only";
 import { isDemoMode } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { demoStore } from "@/lib/demo/store";
-import type { SchoolClass, Section, Subject } from "@/types/database";
+import type { SchoolClass, Section } from "@/types/database";
 
 export async function listClasses(): Promise<SchoolClass[]> {
   if (isDemoMode()) return demoStore.listClasses();
@@ -18,12 +18,4 @@ export async function listSections(): Promise<Section[]> {
   const { data, error } = await supabase.from("sections").select("*");
   if (error) throw error;
   return data as Section[];
-}
-
-export async function listSubjects(): Promise<Subject[]> {
-  if (isDemoMode()) return demoStore.listSubjects();
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("subjects").select("*").order("name");
-  if (error) throw error;
-  return data as Subject[];
 }

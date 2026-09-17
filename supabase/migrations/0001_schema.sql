@@ -239,10 +239,12 @@ create index idx_students_class on students(class_id, section_id);
 create index idx_students_status on students(status);
 
 create table student_parents (
+  school_id uuid not null references schools(id) on delete cascade,
   student_id uuid not null references students(id) on delete cascade,
   parent_id uuid not null references parents(id) on delete cascade,
   primary key (student_id, parent_id)
 );
+create index idx_student_parents_school on student_parents(school_id);
 
 -- ---------------------------------------------------------------------
 -- ATTENDANCE

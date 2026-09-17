@@ -11,8 +11,13 @@ project brief. Status below reflects the current branch.
       (CRUD), Classes & Sections.
 - [x] Attendance, Notices, Events, Homework, Fees read/write views pulled
       forward from later phases since the schema and dashboard needed them.
-- [ ] **Phase 3** — Subjects assignment UI, Timetable builder, Attendance
-      analytics.
+- [x] **Phase 3** — Subjects (CRUD, bilingual name, type/marks), Periods,
+      Subject Assignments (class+section+subject+teacher, duplicate-proof),
+      Timetable builder with server- and DB-level conflict detection
+      (teacher/section/room double-booking), role-scoped views (teacher's
+      own timetable + "My Classes/My Subjects" dashboard, student's own
+      class, parent's per-child selector), printable class/teacher
+      timetables. Attendance analytics deferred (not in this phase's scope).
 - [ ] **Phase 4** — Exams, Marks entry, Results/report cards, PDF export.
 - [ ] **Phase 5** — Parents module, Student Promotion.
 - [ ] **Phase 6** — richer Homework/Notices/Events workflows (submissions,

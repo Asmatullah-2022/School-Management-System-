@@ -11,10 +11,16 @@ import {
 import { getSession } from "@/lib/auth/session";
 import { listStudents } from "@/lib/data/students";
 import { listTeachers } from "@/lib/data/teachers";
-import { listClasses } from "@/lib/data/academics";
-import { listAttendance, listFees, listEvents, listNotices } from "@/lib/data/records";
+import { listClasses, listSections } from "@/lib/data/academics";
+import { listAttendance, listFees, listEvents, listNotices, listHomework } from "@/lib/data/records";
+import { listAssignments } from "@/lib/data/assignments";
+import { listPeriods } from "@/lib/data/periods";
+import { listTimetableEntries } from "@/lib/data/timetable";
+import { listSubjects } from "@/lib/data/subjects";
+import { getTeacherIdForProfile } from "@/lib/data/people";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, EmptyState } from "@/components/ui/card";
+import { TeacherDashboard } from "@/components/dashboard/teacher-dashboard";
 import {
   AttendanceChart,
   ClassDistributionChart,
@@ -28,6 +34,54 @@ function todayISO() {
 
 export default async function DashboardPage() {
   const session = await getSession();
+
+  if (session?.profile.role === "teacher") {
+    const teacherId = await getTeacherIdForProfile(session.profile.id);
+    const [assignments, allEntries, periods, subjects, teachers, classes, sections, students, homework] = await Promise.all([
+      listAssignments(),
+      listTimetableEntries(),
+      listPeriods(),
+      listSubjects(),
+      listTeachers(),
+      listClasses(),
+      listSections(),
+      listStudents(),
+      listHomework(),
+    ]);
+    const myAssignments = teacherId ? assignments.filter((a) => a.teacher_id === teacherId) : [];
+    const todayDow = new Date().getDay();
+    const todayEntries = teacherId ? allEntries.filter((e) => e.teacher_id === teacherId && e.day_of_week === todayDow) : [];
+    const myHomework = teacherId ? homework.filter((h) => h.teacher_id === teacherId) : [];
+
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-xl font-semibold sm:text-2xl">
+            {greeting}, {session.profile.full_name.split(" ")[0]} 👋
+          </h1>
+          <p className="text-sm text-muted">
+            {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          </p>
+        </div>
+        <TeacherDashboard
+          assignments={myAssignments}
+          todayEntries={todayEntries}
+          periods={periods}
+          subjects={subjects}
+          teachers={teachers}
+          classes={classes}
+          sections={sections}
+          students={students}
+          homework={myHomework}
+          today={todayDow}
+        />
+      </div>
+    );
+  }
+
   const [students, teachers, classes, attendance, fees, events, notices] = await Promise.all([
     listStudents(),
     listTeachers(),

@@ -66,8 +66,10 @@ export const navSections: NavSection[] = [
     title: "Academics",
     items: [
       { label: "Classes & Sections", href: "/classes", icon: BookOpen, roles: ADMIN, status: "ready" },
-      { label: "Subjects", href: "/modules/subjects", icon: BookOpen, roles: ADMIN, status: "planned", phase: "Phase 3" },
-      { label: "Timetable", href: "/modules/timetable", icon: CalendarClock, roles: STAFF, status: "planned", phase: "Phase 3" },
+      { label: "Subjects", href: "/academics/subjects", icon: BookOpen, roles: [...ADMIN, "teacher"], status: "ready" },
+      { label: "Subject Assignments", href: "/academics/assignments", icon: BookOpen, roles: ADMIN, status: "ready" },
+      { label: "Periods", href: "/academics/periods", icon: CalendarClock, roles: ADMIN, status: "ready" },
+      { label: "Timetable", href: "/timetable", icon: CalendarClock, roles: ALL, status: "ready" },
     ],
   },
   {

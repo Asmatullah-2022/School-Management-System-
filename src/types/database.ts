@@ -34,6 +34,7 @@ export interface School {
   principal_name?: string | null;
   currency: string;
   is_demo: boolean;
+  working_days: number[]; // 0=Sunday .. 6=Saturday
 }
 
 export interface Profile {
@@ -72,16 +73,65 @@ export interface Section {
   capacity?: number | null;
 }
 
+export type SubjectType = "core" | "elective" | "optional";
+export type ActiveStatus = "active" | "archived";
+
 export interface Subject {
   id: string;
   school_id: string;
   name: string;
+  name_urdu?: string | null;
   code?: string | null;
+  description?: string | null;
+  subject_type: SubjectType;
+  total_marks: number;
+  passing_marks: number;
+  status: ActiveStatus;
+}
+
+export interface Period {
+  id: string;
+  school_id: string;
+  period_number: number;
+  name: string;
+  start_time: string;
+  end_time: string;
+  is_break: boolean;
+  sort_order: number;
+  status: ActiveStatus;
+}
+
+/** teacher_subjects row — subject assigned to a class/section with a teacher. */
+export interface SubjectAssignment {
+  id: string;
+  school_id: string;
+  teacher_id: string;
+  subject_id: string;
+  class_id: string;
+  section_id: string | null;
+  academic_session_id?: string | null;
+  weekly_periods: number;
+  status: "active" | "inactive";
+}
+
+/** timetables row — one class/section's subject+teacher for a specific day+period. */
+export interface TimetableEntry {
+  id: string;
+  school_id: string;
+  class_id: string;
+  section_id: string;
+  subject_id: string;
+  teacher_id: string | null;
+  period_id: string;
+  academic_session_id?: string | null;
+  day_of_week: number; // 0=Sunday .. 6=Saturday (JS Date.getDay())
+  room?: string | null;
 }
 
 export interface Teacher {
   id: string;
   school_id: string;
+  profile_id?: string | null;
   employee_id: string;
   full_name: string;
   father_name?: string | null;
@@ -100,6 +150,7 @@ export interface Teacher {
 export interface Student {
   id: string;
   school_id: string;
+  profile_id?: string | null;
   admission_number: string;
   full_name: string;
   father_name?: string | null;

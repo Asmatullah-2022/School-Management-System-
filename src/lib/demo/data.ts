@@ -4,13 +4,16 @@ import type {
   FeeRecord,
   HomeworkRecord,
   NoticeRecord,
+  Period,
   Profile,
   School,
   SchoolClass,
   Section,
   Student,
   Subject,
+  SubjectAssignment,
   Teacher,
+  TimetableEntry,
   UserRole,
 } from "@/types/database";
 
@@ -32,6 +35,7 @@ export const demoSchool: School = {
   principal_name: "Mr. Muhammad Aslam",
   currency: "PKR",
   is_demo: true,
+  working_days: [1, 2, 3, 4, 5, 6], // Monday–Saturday
 };
 
 export const demoClasses: SchoolClass[] = [
@@ -53,24 +57,27 @@ export const demoSections: Section[] = [
 ];
 
 export const demoSubjects: Subject[] = [
-  { id: "sub-eng", school_id: DEMO_SCHOOL_ID, name: "English", code: "ENG" },
-  { id: "sub-urd", school_id: DEMO_SCHOOL_ID, name: "Urdu", code: "URD" },
-  { id: "sub-math", school_id: DEMO_SCHOOL_ID, name: "Mathematics", code: "MATH" },
-  { id: "sub-sci", school_id: DEMO_SCHOOL_ID, name: "General Science", code: "SCI" },
-  { id: "sub-isl", school_id: DEMO_SCHOOL_ID, name: "Islamiat", code: "ISL" },
-  { id: "sub-cs", school_id: DEMO_SCHOOL_ID, name: "Computer Science", code: "CS" },
-  { id: "sub-sst", school_id: DEMO_SCHOOL_ID, name: "Social Studies", code: "SST" },
+  { id: "sub-eng", school_id: DEMO_SCHOOL_ID, name: "English", name_urdu: "انگریزی", code: "ENG", subject_type: "core", total_marks: 100, passing_marks: 33, status: "active" },
+  { id: "sub-urd", school_id: DEMO_SCHOOL_ID, name: "Urdu", name_urdu: "اردو", code: "URD", subject_type: "core", total_marks: 100, passing_marks: 33, status: "active" },
+  { id: "sub-math", school_id: DEMO_SCHOOL_ID, name: "Mathematics", name_urdu: "ریاضی", code: "MATH", subject_type: "core", total_marks: 100, passing_marks: 33, status: "active" },
+  { id: "sub-sci", school_id: DEMO_SCHOOL_ID, name: "General Science", name_urdu: "عمومی سائنس", code: "SCI", subject_type: "core", total_marks: 100, passing_marks: 33, status: "active" },
+  { id: "sub-isl", school_id: DEMO_SCHOOL_ID, name: "Islamiat", name_urdu: "اسلامیات", code: "ISL", subject_type: "core", total_marks: 100, passing_marks: 33, status: "active" },
+  { id: "sub-cs", school_id: DEMO_SCHOOL_ID, name: "Computer Science", name_urdu: "کمپیوٹر سائنس", code: "CS", subject_type: "elective", total_marks: 100, passing_marks: 33, status: "active" },
+  { id: "sub-sst", school_id: DEMO_SCHOOL_ID, name: "Social Studies", name_urdu: "معاشرتی علوم", code: "SST", subject_type: "core", total_marks: 100, passing_marks: 33, status: "active" },
+  { id: "sub-gk", school_id: DEMO_SCHOOL_ID, name: "General Knowledge", name_urdu: "عمومی معلومات", code: "GK", subject_type: "elective", total_marks: 50, passing_marks: 17, status: "active" },
+  { id: "sub-art", school_id: DEMO_SCHOOL_ID, name: "Art", name_urdu: "مصوری", code: "ART", subject_type: "optional", total_marks: 50, passing_marks: 17, status: "active" },
+  { id: "sub-pe", school_id: DEMO_SCHOOL_ID, name: "Physical Education", name_urdu: "جسمانی تعلیم", code: "PE", subject_type: "optional", total_marks: 50, passing_marks: 17, status: "active" },
 ];
 
 export const demoTeachers: Teacher[] = [
-  { id: "t-1", school_id: DEMO_SCHOOL_ID, employee_id: "EMP-001", full_name: "Ayesha Siddiqui", father_name: "Muhammad Siddiqui", gender: "female", mobile: "0300-1111111", email: "ayesha@gmps.edu.pk", designation: "Senior Teacher", qualification: "M.Ed", joining_date: "2019-06-01", status: "active" },
+  { id: "t-1", school_id: DEMO_SCHOOL_ID, profile_id: "u-teacher", employee_id: "EMP-001", full_name: "Ayesha Siddiqui", father_name: "Muhammad Siddiqui", gender: "female", mobile: "0300-1111111", email: "ayesha@gmps.edu.pk", designation: "Senior Teacher", qualification: "M.Ed", joining_date: "2019-06-01", status: "active" },
   { id: "t-2", school_id: DEMO_SCHOOL_ID, employee_id: "EMP-002", full_name: "Bilal Ahmed", father_name: "Rasheed Ahmed", gender: "male", mobile: "0300-2222222", email: "bilal@gmps.edu.pk", designation: "Teacher", qualification: "B.Ed", joining_date: "2021-08-15", status: "active" },
   { id: "t-3", school_id: DEMO_SCHOOL_ID, employee_id: "EMP-003", full_name: "Sana Malik", father_name: "Tariq Malik", gender: "female", mobile: "0300-3333333", email: "sana@gmps.edu.pk", designation: "Teacher", qualification: "B.A, B.Ed", joining_date: "2020-03-10", status: "active" },
   { id: "t-4", school_id: DEMO_SCHOOL_ID, employee_id: "EMP-004", full_name: "Kamran Iqbal", father_name: "Iqbal Hussain", gender: "male", mobile: "0300-4444444", email: "kamran@gmps.edu.pk", designation: "Computer Teacher", qualification: "BSCS", joining_date: "2022-01-05", status: "active" },
 ];
 
 export const demoStudents: Student[] = [
-  { id: "st-1", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-001", full_name: "Ali Hassan", father_name: "Imran Hassan", mother_name: "Sadia Imran", gender: "male", date_of_birth: "2018-05-12", contact_number: "0301-1111111", address: "Street 5, Model Town", district: "Lahore", province: "Punjab", class_id: "c-1", section_id: "s-1a", roll_number: "1", admission_date: "2024-04-01", blood_group: "O+", status: "active" },
+  { id: "st-1", school_id: DEMO_SCHOOL_ID, profile_id: "u-student", admission_number: "GMPS-2025-001", full_name: "Ali Hassan", father_name: "Imran Hassan", mother_name: "Sadia Imran", gender: "male", date_of_birth: "2018-05-12", contact_number: "0301-1111111", address: "Street 5, Model Town", district: "Lahore", province: "Punjab", class_id: "c-1", section_id: "s-1a", roll_number: "1", admission_date: "2024-04-01", blood_group: "O+", status: "active" },
   { id: "st-2", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-002", full_name: "Fatima Noor", father_name: "Shahid Noor", mother_name: "Rubina Shahid", gender: "female", date_of_birth: "2018-07-20", contact_number: "0301-2222222", address: "Street 8, Model Town", district: "Lahore", province: "Punjab", class_id: "c-1", section_id: "s-1a", roll_number: "2", admission_date: "2024-04-01", blood_group: "B+", status: "active" },
   { id: "st-3", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-003", full_name: "Hamza Khan", father_name: "Nasir Khan", mother_name: "Farah Nasir", gender: "male", date_of_birth: "2017-02-15", contact_number: "0301-3333333", address: "Street 2, Township", district: "Lahore", province: "Punjab", class_id: "c-2", section_id: "s-2a", roll_number: "1", admission_date: "2023-04-01", blood_group: "A+", status: "active" },
   { id: "st-4", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-004", full_name: "Zainab Bibi", father_name: "Aslam Ali", mother_name: "Kausar Aslam", gender: "female", date_of_birth: "2017-09-09", contact_number: "0301-4444444", address: "Street 3, Township", district: "Lahore", province: "Punjab", class_id: "c-2", section_id: "s-2a", roll_number: "2", admission_date: "2023-04-01", blood_group: "AB+", status: "active" },
@@ -79,6 +86,52 @@ export const demoStudents: Student[] = [
   { id: "st-7", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-007", full_name: "Bilal Saeed", father_name: "Saeed Ahmed", mother_name: "Shazia Saeed", gender: "male", date_of_birth: "2016-03-18", contact_number: "0301-7777777", address: "Street 9, Johar Town", district: "Lahore", province: "Punjab", class_id: "c-4", section_id: "s-4a", roll_number: "1", admission_date: "2022-04-01", blood_group: "A-", status: "active" },
   { id: "st-8", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-008", full_name: "Mahnoor Fatima", father_name: "Waqas Ahmed", mother_name: "Sobia Waqas", gender: "female", date_of_birth: "2015-06-30", contact_number: "0301-8888888", address: "Street 6, Johar Town", district: "Lahore", province: "Punjab", class_id: "c-5", section_id: "s-5a", roll_number: "1", admission_date: "2021-04-01", blood_group: "O+", status: "active" },
 ];
+
+export const demoPeriods: Period[] = [
+  { id: "p-1", school_id: DEMO_SCHOOL_ID, period_number: 1, name: "Period 1", start_time: "08:00", end_time: "08:40", is_break: false, sort_order: 1, status: "active" },
+  { id: "p-2", school_id: DEMO_SCHOOL_ID, period_number: 2, name: "Period 2", start_time: "08:40", end_time: "09:20", is_break: false, sort_order: 2, status: "active" },
+  { id: "p-3", school_id: DEMO_SCHOOL_ID, period_number: 3, name: "Period 3", start_time: "09:20", end_time: "10:00", is_break: false, sort_order: 3, status: "active" },
+  { id: "p-break", school_id: DEMO_SCHOOL_ID, period_number: 4, name: "Break", start_time: "10:00", end_time: "10:20", is_break: true, sort_order: 4, status: "active" },
+  { id: "p-4", school_id: DEMO_SCHOOL_ID, period_number: 5, name: "Period 4", start_time: "10:20", end_time: "11:00", is_break: false, sort_order: 5, status: "active" },
+  { id: "p-5", school_id: DEMO_SCHOOL_ID, period_number: 6, name: "Period 5", start_time: "11:00", end_time: "11:40", is_break: false, sort_order: 6, status: "active" },
+  { id: "p-6", school_id: DEMO_SCHOOL_ID, period_number: 7, name: "Period 6", start_time: "11:40", end_time: "12:20", is_break: false, sort_order: 7, status: "active" },
+];
+
+export const demoAssignments: SubjectAssignment[] = [
+  { id: "asg-1", school_id: DEMO_SCHOOL_ID, teacher_id: "t-1", subject_id: "sub-math", class_id: "c-1", section_id: "s-1a", weekly_periods: 6, status: "active" },
+  { id: "asg-2", school_id: DEMO_SCHOOL_ID, teacher_id: "t-1", subject_id: "sub-eng", class_id: "c-1", section_id: "s-1a", weekly_periods: 5, status: "active" },
+  { id: "asg-3", school_id: DEMO_SCHOOL_ID, teacher_id: "t-1", subject_id: "sub-isl", class_id: "c-1", section_id: "s-1a", weekly_periods: 3, status: "active" },
+  { id: "asg-4", school_id: DEMO_SCHOOL_ID, teacher_id: "t-2", subject_id: "sub-urd", class_id: "c-1", section_id: "s-1a", weekly_periods: 5, status: "active" },
+  { id: "asg-5", school_id: DEMO_SCHOOL_ID, teacher_id: "t-2", subject_id: "sub-math", class_id: "c-2", section_id: "s-2a", weekly_periods: 6, status: "active" },
+  { id: "asg-6", school_id: DEMO_SCHOOL_ID, teacher_id: "t-2", subject_id: "sub-eng", class_id: "c-2", section_id: "s-2a", weekly_periods: 5, status: "active" },
+  { id: "asg-7", school_id: DEMO_SCHOOL_ID, teacher_id: "t-3", subject_id: "sub-sci", class_id: "c-1", section_id: "s-1a", weekly_periods: 4, status: "active" },
+  { id: "asg-8", school_id: DEMO_SCHOOL_ID, teacher_id: "t-3", subject_id: "sub-sst", class_id: "c-2", section_id: "s-2a", weekly_periods: 3, status: "active" },
+  { id: "asg-9", school_id: DEMO_SCHOOL_ID, teacher_id: "t-4", subject_id: "sub-cs", class_id: "c-3", section_id: "s-3a", weekly_periods: 2, status: "active" },
+];
+
+export const demoTimetableEntries: TimetableEntry[] = [
+  // Grade 1 - Section A (Monday=1 .. Saturday=6)
+  { id: "tt-1", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-math", teacher_id: "t-1", period_id: "p-1", day_of_week: 1, room: "Room 1" },
+  { id: "tt-2", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-eng", teacher_id: "t-1", period_id: "p-2", day_of_week: 1, room: "Room 1" },
+  { id: "tt-3", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-urd", teacher_id: "t-2", period_id: "p-3", day_of_week: 1, room: "Room 1" },
+  { id: "tt-4", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-sci", teacher_id: "t-3", period_id: "p-4", day_of_week: 1, room: "Room 1" },
+  { id: "tt-5", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-isl", teacher_id: "t-1", period_id: "p-5", day_of_week: 1, room: "Room 1" },
+  { id: "tt-6", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-math", teacher_id: "t-1", period_id: "p-1", day_of_week: 2, room: "Room 1" },
+  { id: "tt-7", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-eng", teacher_id: "t-1", period_id: "p-2", day_of_week: 2, room: "Room 1" },
+  { id: "tt-8", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-urd", teacher_id: "t-2", period_id: "p-3", day_of_week: 2, room: "Room 1" },
+  { id: "tt-9", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-isl", teacher_id: "t-1", period_id: "p-5", day_of_week: 2, room: "Room 1" },
+  { id: "tt-10", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-math", teacher_id: "t-1", period_id: "p-1", day_of_week: 3, room: "Room 1" },
+  { id: "tt-11", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-sci", teacher_id: "t-3", period_id: "p-4", day_of_week: 3, room: "Room 1" },
+  // Grade 2 - Section A
+  { id: "tt-20", school_id: DEMO_SCHOOL_ID, class_id: "c-2", section_id: "s-2a", subject_id: "sub-math", teacher_id: "t-2", period_id: "p-1", day_of_week: 1, room: "Room 2" },
+  { id: "tt-21", school_id: DEMO_SCHOOL_ID, class_id: "c-2", section_id: "s-2a", subject_id: "sub-eng", teacher_id: "t-2", period_id: "p-2", day_of_week: 1, room: "Room 2" },
+  { id: "tt-22", school_id: DEMO_SCHOOL_ID, class_id: "c-2", section_id: "s-2a", subject_id: "sub-sst", teacher_id: "t-3", period_id: "p-3", day_of_week: 1, room: "Room 2" },
+];
+
+/** Which student ids a parent profile can see (student_parents equivalent for demo mode). */
+export const demoParentChildren: Record<string, string[]> = {
+  "u-parent": ["st-1"],
+};
 
 function lastNDays(n: number): string[] {
   const days: string[] = [];
