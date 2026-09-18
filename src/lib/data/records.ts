@@ -5,7 +5,6 @@ import { demoStore } from "@/lib/demo/store";
 import type {
   AttendanceRecord,
   EventRecord,
-  FeeRecord,
   HomeworkRecord,
   NoticeRecord,
 } from "@/types/database";
@@ -23,14 +22,6 @@ export async function markAttendance(records: AttendanceRecord[]): Promise<void>
   const supabase = await createClient();
   const { error } = await supabase.from("attendance").upsert(records, { onConflict: "student_id,date" });
   if (error) throw error;
-}
-
-export async function listFees(): Promise<FeeRecord[]> {
-  if (isDemoMode()) return demoStore.listFees();
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("fees").select("*").order("due_date", { ascending: false });
-  if (error) throw error;
-  return data as FeeRecord[];
 }
 
 export async function listHomework(): Promise<HomeworkRecord[]> {

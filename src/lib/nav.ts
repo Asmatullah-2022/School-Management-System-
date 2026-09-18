@@ -52,7 +52,7 @@ export const navSections: NavSection[] = [
     items: [
       { label: "All Students", href: "/students", icon: Users, roles: [...ADMIN, "teacher", "accountant"], status: "ready" },
       { label: "Add Student", href: "/students/new", icon: Users, roles: ADMIN, status: "ready" },
-      { label: "Student Promotion", href: "/modules/promotion", icon: Users, roles: ADMIN, status: "planned", phase: "Phase 5" },
+      { label: "Student Promotion", href: "/modules/promotion", icon: Users, roles: ADMIN, status: "planned", phase: "Phase 9" },
     ],
   },
   {
@@ -95,13 +95,22 @@ export const navSections: NavSection[] = [
   {
     title: "Fees & Finance",
     items: [
-      { label: "Fees & Payments", href: "/fees", icon: Wallet, roles: [...ADMIN, "accountant", "parent", "student"], status: "ready" },
+      { label: "Finance Dashboard", href: "/fees", icon: Wallet, roles: [...ADMIN, "accountant"], status: "ready" },
+      { label: "My Fees", href: "/fees", icon: Wallet, roles: ["parent", "student"], status: "ready" },
+      { label: "Fee Structure", href: "/fees/structures", icon: Wallet, roles: [...ADMIN, "accountant"], status: "ready" },
+      { label: "Generate Fees", href: "/fees/generate", icon: Wallet, roles: [...ADMIN, "accountant"], status: "ready" },
+      { label: "Collect Payment", href: "/fees/collect", icon: Wallet, roles: [...ADMIN, "accountant"], status: "ready" },
+      { label: "Payment History", href: "/fees/payments", icon: Wallet, roles: [...ADMIN, "accountant"], status: "ready" },
+      { label: "Outstanding Fees", href: "/fees/outstanding", icon: Wallet, roles: [...ADMIN, "accountant"], status: "ready" },
+      { label: "Discounts & Scholarships", href: "/fees/discounts", icon: Wallet, roles: [...ADMIN, "accountant"], status: "ready" },
+      { label: "Refunds", href: "/fees/refunds", icon: Wallet, roles: [...ADMIN, "accountant"], status: "ready" },
+      { label: "Finance Reports", href: "/fees/reports", icon: BarChart3, roles: [...ADMIN, "accountant"], status: "ready" },
     ],
   },
   {
     title: "",
     items: [
-      { label: "Parents", href: "/modules/parents", icon: UserRound, roles: ADMIN, status: "planned", phase: "Phase 5" },
+      { label: "Parents", href: "/modules/parents", icon: UserRound, roles: ADMIN, status: "planned", phase: "Phase 6" },
       { label: "Library", href: "/modules/library", icon: Library, roles: STAFF, status: "planned", phase: "Phase 7" },
       { label: "Transport", href: "/modules/transport", icon: Bus, roles: STAFF, status: "planned", phase: "Phase 7" },
       { label: "Inventory", href: "/modules/inventory", icon: Boxes, roles: ADMIN, status: "planned", phase: "Phase 7" },

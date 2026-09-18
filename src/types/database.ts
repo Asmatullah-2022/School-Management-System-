@@ -276,11 +276,150 @@ export interface FeeRecord {
   id: string;
   school_id: string;
   student_id: string;
+  fee_structure_id?: string | null;
+  fee_period_id?: string | null;
   title: string;
   amount: number;
   discount: number;
+  paid_amount: number;
+  balance: number;
   due_date: string;
   status: FeeStatus;
+  notes?: string | null;
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type FeeFrequency = "monthly" | "one_time" | "quarterly" | "annual";
+
+export interface FeeStructure {
+  id: string;
+  school_id: string;
+  class_id?: string | null;
+  academic_session_id?: string | null;
+  name: string;
+  amount: number;
+  frequency: FeeFrequency;
+  fee_type: string;
+  is_active: boolean;
+  created_at?: string;
+}
+
+export interface FeePeriod {
+  id: string;
+  school_id: string;
+  academic_session_id?: string | null;
+  name: string;
+  month: number;
+  year: number;
+  start_date: string;
+  end_date: string;
+}
+
+export type DiscountKind = "fixed" | "percentage";
+export type DiscountScope = "school" | "class" | "section" | "student";
+
+export interface Discount {
+  id: string;
+  school_id: string;
+  name: string;
+  kind: DiscountKind;
+  value: number;
+  scope: DiscountScope;
+  class_id?: string | null;
+  section_id?: string | null;
+  student_id?: string | null;
+  academic_session_id?: string | null;
+  is_active: boolean;
+  created_by?: string;
+  created_at?: string;
+}
+
+export type ScholarshipStatus = "pending" | "approved" | "rejected";
+
+export interface Scholarship {
+  id: string;
+  school_id: string;
+  student_id: string;
+  name: string;
+  kind: DiscountKind;
+  value: number;
+  status: ScholarshipStatus;
+  academic_session_id?: string | null;
+  notes?: string | null;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  created_by?: string;
+  created_at?: string;
+}
+
+export interface FeeDiscount {
+  id: string;
+  school_id: string;
+  fee_id: string;
+  discount_id?: string | null;
+  scholarship_id?: string | null;
+  applied_amount: number;
+  created_at?: string;
+}
+
+export interface Payment {
+  id: string;
+  school_id: string;
+  fee_id: string;
+  student_id: string;
+  amount_paid: number;
+  payment_date: string;
+  payment_method: string;
+  receipt_number: string;
+  received_by?: string | null;
+  status: "completed";
+  notes?: string | null;
+  created_at?: string;
+}
+
+export interface PaymentAllocation {
+  id: string;
+  school_id: string;
+  payment_id: string;
+  fee_id: string;
+  amount: number;
+  created_at?: string;
+}
+
+export interface Refund {
+  id: string;
+  school_id: string;
+  payment_id: string;
+  fee_id: string;
+  student_id: string;
+  amount: number;
+  reason: string;
+  status: "completed";
+  refunded_by?: string | null;
+  created_at?: string;
+}
+
+export interface Notification {
+  id: string;
+  school_id: string;
+  profile_id: string;
+  title: string;
+  message?: string | null;
+  type: string;
+  is_read: boolean;
+  link?: string | null;
+  created_at?: string;
+}
+
+export interface FinancialSettings {
+  id: string;
+  school_id: string;
+  receipt_prefix: string;
+  last_receipt_number: number;
+  currency: string;
+  late_fee_percentage: number;
 }
 
 export interface HomeworkRecord {

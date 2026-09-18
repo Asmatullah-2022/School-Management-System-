@@ -31,3 +31,26 @@ export async function getChildStudentIdsForProfile(profileId: string): Promise<s
   const { data } = await supabase.from("student_parents").select("student_id").eq("parent_id", parent.id);
   return (data ?? []).map((row) => row.student_id as string);
 }
+
+/** Resolves the profile ids (student's own account + any linked parents') that
+ * should receive a notification about a given student — used by fee reminders. */
+export async function getGuardianProfileIdsForStudent(studentId: string): Promise<string[]> {
+  if (isDemoMode()) {
+    const ownProfileId = demoStudents.find((s) => s.id === studentId)?.profile_id;
+    const parentProfileIds = Object.entries(demoParentChildren)
+      .filter(([, children]) => children.includes(studentId))
+      .map(([profileId]) => profileId);
+    return [ownProfileId, ...parentProfileIds].filter(Boolean) as string[];
+  }
+
+  const supabase = await createClient();
+  const { data: student } = await supabase.from("students").select("profile_id").eq("id", studentId).maybeSingle();
+  const { data: links } = await supabase.from("student_parents").select("parent_id").eq("student_id", studentId);
+  const parentIds = (links ?? []).map((l) => l.parent_id as string);
+  let parentProfileIds: string[] = [];
+  if (parentIds.length > 0) {
+    const { data: parents } = await supabase.from("parents").select("profile_id").in("id", parentIds);
+    parentProfileIds = (parents ?? []).map((p) => p.profile_id).filter(Boolean) as string[];
+  }
+  return [student?.profile_id, ...parentProfileIds].filter(Boolean) as string[];
+}

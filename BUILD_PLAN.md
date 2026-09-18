@@ -29,9 +29,27 @@ project brief. Status below reflects the current branch.
       trail (reason/old/new/user/timestamp, enforced by a DB trigger),
       results hidden from students/parents until the exam is published
       (enforced by RLS, not just the UI).
-- [ ] **Phase 5** — Parents module, Student Promotion.
-- [ ] **Phase 6** — richer Homework/Notices/Events workflows (submissions,
-      targeted audiences).
+- [x] **Phase 5** — Fees & Finance: Fee Structures (type/frequency/CRUD/
+      duplicate), Fee Periods, fee-charge generation (school/class/section/
+      student scope, DB-enforced duplicate prevention), Discounts (fixed/
+      percentage, school/class/section/student scope) and Scholarships
+      (School-Admin approval workflow), an append-only payment ledger
+      (`payments`/`payment_allocations`/`refunds` — insert+select only, no
+      UPDATE/DELETE policy on any of the three, so a historical transaction
+      can never be edited), atomic sequential receipt numbers
+      (`REC-YYYY-000001` via a row-locking DB function), multi-fee payment
+      allocation, capped and audit-logged refunds, printable receipts,
+      Student Fee Accounts (ledger), Outstanding Fees (filters + CSV
+      export), Payment History (filters + CSV export), a Finance Reports
+      Center (collection/outstanding-by-class/payment-method/discount-
+      scholarship/defaulters/refunds, each CSV-exportable), in-app fee
+      reminders (no SMS/WhatsApp claimed), and a Finance Dashboard with
+      real charts. RLS: School Admin/Accountant/Super Admin only for every
+      finance table; teachers get none; parents/students see only their
+      own/child's charges, payments, and refunds.
+- [ ] **Phase 6** — Parent + Student portal depth (richer Homework/Notices/
+      Events workflows — submissions, targeted audiences — building on the
+      fee/result visibility already wired in Phases 4-5).
 - [ ] **Phase 7** — Library, Transport, Inventory.
 - [ ] **Phase 8** — Certificates, Reports Center, PDF generation.
 - [ ] **Phase 9** — Users & Roles admin UI, editable School Settings,

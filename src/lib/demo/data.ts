@@ -1,17 +1,26 @@
 import type {
   AttendanceRecord,
+  Discount,
   Exam,
   ExamSubject,
   EventRecord,
+  FeeDiscount,
+  FeePeriod,
   FeeRecord,
+  FeeStructure,
+  FinancialSettings,
   GradeBand,
   HomeworkRecord,
   Mark,
   MarkRevision,
   NoticeRecord,
+  Payment,
+  PaymentAllocation,
   Period,
   Profile,
+  Refund,
   Result,
+  Scholarship,
   School,
   SchoolClass,
   Section,
@@ -220,13 +229,150 @@ export const demoAttendance: AttendanceRecord[] = demoStudents.flatMap((s, idx) 
   }))
 );
 
-export const demoFees: FeeRecord[] = [
-  { id: "fee-1", school_id: DEMO_SCHOOL_ID, student_id: "st-1", title: "Monthly Tuition Fee - Sep 2025", amount: 2500, discount: 0, due_date: "2025-09-10", status: "paid" },
-  { id: "fee-2", school_id: DEMO_SCHOOL_ID, student_id: "st-2", title: "Monthly Tuition Fee - Sep 2025", amount: 2500, discount: 0, due_date: "2025-09-10", status: "unpaid" },
-  { id: "fee-3", school_id: DEMO_SCHOOL_ID, student_id: "st-3", title: "Monthly Tuition Fee - Sep 2025", amount: 2200, discount: 200, due_date: "2025-09-10", status: "paid" },
-  { id: "fee-4", school_id: DEMO_SCHOOL_ID, student_id: "st-4", title: "Monthly Tuition Fee - Sep 2025", amount: 2200, discount: 0, due_date: "2025-09-10", status: "overdue" },
-  { id: "fee-5", school_id: DEMO_SCHOOL_ID, student_id: "st-5", title: "Monthly Tuition Fee - Sep 2025", amount: 2800, discount: 0, due_date: "2025-09-10", status: "unpaid" },
+// ---------------------------------------------------------------------
+// PHASE 5 — FEES / FINANCE
+// ---------------------------------------------------------------------
+const TUITION_BY_CLASS: Record<string, number> = {
+  "c-nursery": 1800,
+  "c-kg": 2000,
+  "c-1": 2200,
+  "c-2": 2200,
+  "c-3": 2500,
+  "c-4": 2500,
+  "c-5": 2800,
+};
+
+export const demoFeeStructures: FeeStructure[] = [
+  ...Object.entries(TUITION_BY_CLASS).map(([classId, amount]) => ({
+    id: `fs-tuition-${classId}`,
+    school_id: DEMO_SCHOOL_ID,
+    class_id: classId,
+    academic_session_id: null,
+    name: "Monthly Tuition Fee",
+    amount,
+    frequency: "monthly" as const,
+    fee_type: "tuition",
+    is_active: true,
+  })),
+  { id: "fs-admission", school_id: DEMO_SCHOOL_ID, class_id: null, academic_session_id: null, name: "Admission Fee", amount: 5000, frequency: "one_time", fee_type: "admission", is_active: true },
+  { id: "fs-exam", school_id: DEMO_SCHOOL_ID, class_id: null, academic_session_id: null, name: "Term Exam Fee", amount: 800, frequency: "quarterly", fee_type: "exam", is_active: true },
+  { id: "fs-transport", school_id: DEMO_SCHOOL_ID, class_id: null, academic_session_id: null, name: "Transport Fee", amount: 1200, frequency: "monthly", fee_type: "transport", is_active: true },
 ];
+
+export const demoFeePeriods: FeePeriod[] = [
+  { id: "fp-2025-08", school_id: DEMO_SCHOOL_ID, academic_session_id: null, name: "August 2025", month: 8, year: 2025, start_date: "2025-08-01", end_date: "2025-08-31" },
+  { id: "fp-2025-09", school_id: DEMO_SCHOOL_ID, academic_session_id: null, name: "September 2025", month: 9, year: 2025, start_date: "2025-09-01", end_date: "2025-09-30" },
+];
+
+export const demoDiscounts: Discount[] = [
+  { id: "disc-sibling", school_id: DEMO_SCHOOL_ID, name: "Sibling Discount", kind: "percentage", value: 10, scope: "school", class_id: null, section_id: null, student_id: null, academic_session_id: null, is_active: true },
+];
+
+export const demoScholarships: Scholarship[] = [
+  { id: "sch-1", school_id: DEMO_SCHOOL_ID, student_id: "st-5", name: "Merit Scholarship", kind: "percentage", value: 50, status: "approved", academic_session_id: null, notes: "Top position in Grade 3 annual exam.", approved_by: "u-admin", approved_at: "2025-08-05T09:00:00Z" },
+  { id: "sch-2", school_id: DEMO_SCHOOL_ID, student_id: "st-7", name: "Needy Student Concession", kind: "fixed", value: 500, status: "pending", academic_session_id: null, notes: "Requested by father, awaiting review." },
+];
+
+function feeAmountFor(studentId: string, classId: string): number {
+  return TUITION_BY_CLASS[classId] ?? 2000;
+}
+
+function discountFor(studentId: string, amount: number): number {
+  if (studentId === "st-5") return Math.round(amount * 0.5); // approved scholarship
+  if (["st-1", "st-2"].includes(studentId)) return Math.round(amount * 0.1); // sibling discount
+  return 0;
+}
+
+// Two months of tuition charges generated for every active student.
+export const demoFees: FeeRecord[] = demoStudents.flatMap((s) => {
+  if (!s.class_id) return [];
+  const amount = feeAmountFor(s.id, s.class_id);
+  return [
+    { id: `fee-${s.id}-aug`, period: "fp-2025-08", label: "August 2025", due: "2025-08-10" },
+    { id: `fee-${s.id}-sep`, period: "fp-2025-09", label: "September 2025", due: "2025-09-10" },
+  ].map(({ id, period, label, due }) => {
+    const discount = discountFor(s.id, amount);
+    // demo payment behaviour: most Aug charges are settled; Sep is mixed
+    const isAug = period === "fp-2025-08";
+    let paid = 0;
+    if (isAug) paid = amount - discount;
+    else if (["st-1", "st-3", "st-5"].includes(s.id)) paid = amount - discount;
+    else if (["st-2", "st-6"].includes(s.id)) paid = Math.round((amount - discount) / 2);
+
+    const balance = amount - discount - paid;
+    const status: FeeRecord["status"] = balance <= 0 ? "paid" : paid > 0 ? "partial" : new Date(due) < new Date("2025-09-18") ? "overdue" : "unpaid";
+
+    return {
+      id,
+      school_id: DEMO_SCHOOL_ID,
+      student_id: s.id,
+      fee_structure_id: `fs-tuition-${s.class_id}`,
+      fee_period_id: period,
+      title: `Monthly Tuition Fee - ${label}`,
+      amount,
+      discount,
+      paid_amount: paid,
+      balance,
+      due_date: due,
+      status,
+    };
+  });
+});
+
+export const demoFeeDiscounts: FeeDiscount[] = [
+  { id: "fd-1", school_id: DEMO_SCHOOL_ID, fee_id: "fee-st-5-aug", discount_id: null, scholarship_id: "sch-1", applied_amount: Math.round(TUITION_BY_CLASS["c-3"] * 0.5) },
+  { id: "fd-2", school_id: DEMO_SCHOOL_ID, fee_id: "fee-st-5-sep", discount_id: null, scholarship_id: "sch-1", applied_amount: Math.round(TUITION_BY_CLASS["c-3"] * 0.5) },
+  { id: "fd-3", school_id: DEMO_SCHOOL_ID, fee_id: "fee-st-1-aug", discount_id: "disc-sibling", scholarship_id: null, applied_amount: Math.round(TUITION_BY_CLASS["c-1"] * 0.1) },
+  { id: "fd-4", school_id: DEMO_SCHOOL_ID, fee_id: "fee-st-1-sep", discount_id: "disc-sibling", scholarship_id: null, applied_amount: Math.round(TUITION_BY_CLASS["c-1"] * 0.1) },
+  { id: "fd-5", school_id: DEMO_SCHOOL_ID, fee_id: "fee-st-2-aug", discount_id: "disc-sibling", scholarship_id: null, applied_amount: Math.round(TUITION_BY_CLASS["c-1"] * 0.1) },
+  { id: "fd-6", school_id: DEMO_SCHOOL_ID, fee_id: "fee-st-2-sep", discount_id: "disc-sibling", scholarship_id: null, applied_amount: Math.round(TUITION_BY_CLASS["c-1"] * 0.1) },
+];
+
+export const demoPayments: Payment[] = demoFees
+  .filter((f) => f.paid_amount > 0)
+  .map((f, idx) => ({
+    id: `pay-${f.id}`,
+    school_id: DEMO_SCHOOL_ID,
+    fee_id: f.id,
+    student_id: f.student_id,
+    amount_paid: f.paid_amount,
+    payment_date: f.fee_period_id === "fp-2025-08" ? "2025-08-08" : "2025-09-09",
+    payment_method: idx % 3 === 0 ? "cash" : idx % 3 === 1 ? "bank_transfer" : "easypaisa",
+    receipt_number: `REC-2025-${String(idx + 1).padStart(6, "0")}`,
+    received_by: "u-accountant",
+    status: "completed",
+  }));
+
+export const demoPaymentAllocations: PaymentAllocation[] = demoPayments.map((p) => ({
+  id: `alloc-${p.id}`,
+  school_id: DEMO_SCHOOL_ID,
+  payment_id: p.id,
+  fee_id: p.fee_id,
+  amount: p.amount_paid,
+}));
+
+export const demoRefunds: Refund[] = [
+  {
+    id: "ref-1",
+    school_id: DEMO_SCHOOL_ID,
+    payment_id: "pay-fee-st-3-aug",
+    fee_id: "fee-st-3-aug",
+    student_id: "st-3",
+    amount: 200,
+    reason: "Overpayment corrected at parent's request.",
+    status: "completed",
+    refunded_by: "u-accountant",
+  },
+];
+
+export const demoFinancialSettings: FinancialSettings = {
+  id: "fin-settings-1",
+  school_id: DEMO_SCHOOL_ID,
+  receipt_prefix: "REC",
+  last_receipt_number: demoPayments.length,
+  currency: "PKR",
+  late_fee_percentage: 0,
+};
 
 export const demoHomework: HomeworkRecord[] = [
   { id: "hw-1", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-math", teacher_id: "t-1", title: "Practice Sheet: Addition", description: "Complete exercise 3.1 to 3.3", due_date: lastNDays(1)[0] },
