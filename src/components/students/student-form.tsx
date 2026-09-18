@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import type { SchoolClass, Section, Student } from "@/types/database";
+import { useActionForm } from "@/lib/hooks/use-action-form";
 
 const STEPS = ["Basic Info", "Guardian & Contact", "Academic Info"] as const;
 
@@ -53,19 +54,13 @@ export function StudentForm({
 }) {
   const [step, setStep] = useState(0);
   const [selectedClass, setSelectedClass] = useState(defaultValues?.class_id ?? "");
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const { error, pending, handleSubmit } = useActionForm(action);
 
   const filteredSections = sections.filter((s) => s.class_id === selectedClass);
 
   return (
     <form
-      action={(formData) => {
-        startTransition(async () => {
-          const res = await action(formData);
-          if (res?.error) setError(res.error);
-        });
-      }}
+      onSubmit={handleSubmit}
       onKeyDown={(e) => {
         // Prevent Enter (e.g. confirming a <select> option) from submitting
         // the form before the final step is reached.

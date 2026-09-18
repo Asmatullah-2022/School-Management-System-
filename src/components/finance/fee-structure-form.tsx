@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { FeeStructure, SchoolClass } from "@/types/database";
+import { useActionForm } from "@/lib/hooks/use-action-form";
 
 const FEE_TYPES = ["tuition", "admission", "exam", "transport", "library", "hostel", "activity", "other"];
 
@@ -16,22 +16,10 @@ export function FeeStructureForm({
   action: (formData: FormData) => Promise<{ error?: string } | void>;
 }) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const { error, pending, handleSubmit } = useActionForm(action);
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        setError(null);
-        const formData = new FormData(e.currentTarget);
-        startTransition(async () => {
-          const res = await action(formData);
-          if (res?.error) setError(res.error);
-        });
-      }}
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
       {error && <p className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>}
 
       <div>

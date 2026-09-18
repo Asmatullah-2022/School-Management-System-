@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import type { ExamSubject, SchoolClass, Section, Subject, Teacher } from "@/types/database";
+import { useActionForm } from "@/lib/hooks/use-action-form";
 
 export function ScheduleForm({
   action,
@@ -20,22 +21,13 @@ export function ScheduleForm({
   defaultValues?: Partial<ExamSubject>;
   submitLabel?: string;
 }) {
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const { error, pending, handleSubmit } = useActionForm(action);
   const [classId, setClassId] = useState(defaultValues?.class_id ?? "");
 
   const filteredSections = sections.filter((s) => s.class_id === classId);
 
   return (
-    <form
-      action={(formData) => {
-        startTransition(async () => {
-          const res = await action(formData);
-          if (res?.error) setError(res.error);
-        });
-      }}
-      className="space-y-6"
-    >
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <p className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-sm text-danger">{error}</p>
       )}

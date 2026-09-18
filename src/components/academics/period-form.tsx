@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import type { Period } from "@/types/database";
+import { useActionForm } from "@/lib/hooks/use-action-form";
 
 export function PeriodForm({
   action,
@@ -12,19 +12,10 @@ export function PeriodForm({
   defaultValues?: Partial<Period>;
   submitLabel?: string;
 }) {
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const { error, pending, handleSubmit } = useActionForm(action);
 
   return (
-    <form
-      action={(formData) => {
-        startTransition(async () => {
-          const res = await action(formData);
-          if (res?.error) setError(res.error);
-        });
-      }}
-      className="space-y-6"
-    >
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <p className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-sm text-danger">{error}</p>
       )}

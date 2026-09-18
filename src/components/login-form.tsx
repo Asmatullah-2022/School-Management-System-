@@ -1,22 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { loginWithPassword } from "@/lib/auth/actions";
+import { useActionForm } from "@/lib/hooks/use-action-form";
 
 export function LoginForm() {
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const { error, pending, handleSubmit } = useActionForm(loginWithPassword);
 
   return (
-    <form
-      action={(formData) => {
-        startTransition(async () => {
-          const res = await loginWithPassword(formData);
-          if (res?.error) setError(res.error);
-        });
-      }}
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
         <p className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-sm text-danger">{error}</p>
       )}
