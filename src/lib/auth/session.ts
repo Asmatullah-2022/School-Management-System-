@@ -2,7 +2,8 @@ import "server-only";
 import { cookies } from "next/headers";
 import { isDemoMode } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
-import { demoSchool, demoUsers, findDemoUser } from "@/lib/demo/data";
+import { demoUsers, findDemoUser } from "@/lib/demo/data";
+import { demoStore } from "@/lib/demo/store";
 import type { Profile, School } from "@/types/database";
 
 export const DEMO_SESSION_COOKIE = "sms_demo_session";
@@ -20,7 +21,7 @@ export async function getSession(): Promise<Session | null> {
     if (!profileId) return null;
     const demoUser = findDemoUser(profileId);
     if (!demoUser) return null;
-    return { profile: demoUser.profile, school: demoSchool };
+    return { profile: demoUser.profile, school: demoStore.getSchool() };
   }
 
   const supabase = await createClient();

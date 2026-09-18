@@ -82,8 +82,8 @@ export const navSections: NavSection[] = [
   {
     title: "Examinations",
     items: [
-      { label: "Exams & Marks", href: "/modules/exams", icon: NotebookPen, roles: [...ADMIN, "teacher"], status: "planned", phase: "Phase 4" },
-      { label: "Results", href: "/modules/results", icon: FileText, roles: ALL, status: "planned", phase: "Phase 4" },
+      { label: "Exams & Marks", href: "/exams", icon: NotebookPen, roles: [...ADMIN, "teacher"], status: "ready" },
+      { label: "Results", href: "/results", icon: FileText, roles: ALL, status: "ready" },
     ],
   },
   {

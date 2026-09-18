@@ -16,10 +16,21 @@ export type AttendanceStatus = "present" | "absent" | "late" | "leave";
 export type FeeStatus = "paid" | "partial" | "unpaid" | "overdue";
 export type ExamType =
   | "monthly_test"
+  | "unit_test"
   | "mid_term"
   | "first_semester"
   | "second_semester"
-  | "annual";
+  | "annual"
+  | "custom";
+export type ExamStatus = "draft" | "scheduled" | "ongoing" | "completed" | "published" | "archived";
+export type MarksStatus = "draft" | "submitted" | "verified" | "published";
+
+/** One band of the school's configurable grading scale (schools.grading_system). */
+export interface GradeBand {
+  min: number;
+  max: number;
+  grade: string;
+}
 
 export interface School {
   id: string;
@@ -35,6 +46,7 @@ export interface School {
   currency: string;
   is_demo: boolean;
   working_days: number[]; // 0=Sunday .. 6=Saturday
+  grading_system?: GradeBand[] | null;
 }
 
 export interface Profile {
@@ -186,21 +198,78 @@ export interface AttendanceRecord {
   remarks?: string | null;
 }
 
-export interface ExamRecord {
+export interface Exam {
   id: string;
   school_id: string;
+  academic_session_id?: string | null;
   name: string;
   exam_type: ExamType;
   start_date: string;
   end_date: string;
+  status: ExamStatus;
+  created_by?: string | null;
+  published_at?: string | null;
+  published_by?: string | null;
 }
 
-export interface MarkRecord {
+/** exam_subjects row — doubles as the "Exam Schedule" entity (subject/class/section/date/time/room/invigilator). */
+export interface ExamSubject {
+  id: string;
+  school_id: string;
+  exam_id: string;
+  class_id: string;
+  section_id?: string | null;
+  subject_id: string;
+  exam_date?: string | null;
+  exam_room?: string | null;
+  invigilator_id?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  total_marks: number;
+  passing_marks: number;
+}
+
+export interface Mark {
   id: string;
   school_id: string;
   exam_subject_id: string;
   student_id: string;
   obtained_marks: number;
+  status: MarksStatus;
+  entered_by?: string | null;
+  submitted_at?: string | null;
+  submitted_by?: string | null;
+  verified_at?: string | null;
+  verified_by?: string | null;
+  published_at?: string | null;
+}
+
+export interface Result {
+  id: string;
+  school_id: string;
+  exam_id: string;
+  student_id: string;
+  total_obtained: number;
+  total_marks: number;
+  percentage: number;
+  grade?: string | null;
+  gpa?: number | null;
+  class_rank?: number | null;
+  is_pass: boolean;
+  passed_subjects: number;
+  failed_subjects: number;
+  remarks?: string | null;
+}
+
+export interface MarkRevision {
+  id: string;
+  school_id: string;
+  mark_id: string;
+  old_obtained_marks: number;
+  new_obtained_marks: number;
+  reason: string;
+  changed_by?: string | null;
+  created_at: string;
 }
 
 export interface FeeRecord {

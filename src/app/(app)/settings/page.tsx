@@ -1,9 +1,12 @@
-import { getSession } from "@/lib/auth/session";
+import { getSession, isSchoolAdmin } from "@/lib/auth/session";
 import { Card, CardHeader } from "@/components/ui/card";
+import { GradingForm } from "@/components/settings/grading-form";
+import { updateGradingSystemAction } from "./actions";
 
 export default async function SettingsPage() {
   const session = await getSession();
   const school = session?.school;
+  const canManage = !!session && isSchoolAdmin(session.profile.role);
 
   const fields: [string, string | null | undefined][] = [
     ["School Name", school?.name],
@@ -36,8 +39,20 @@ export default async function SettingsPage() {
         </dl>
       </Card>
 
+      {canManage && (
+        <Card>
+          <CardHeader title="Grading System" />
+          <div className="p-5">
+            <p className="mb-4 text-xs text-muted">
+              Percentage ranges used to grade exam results. Bands must not overlap.
+            </p>
+            <GradingForm initialBands={school?.grading_system ?? []} action={updateGradingSystemAction} />
+          </div>
+        </Card>
+      )}
+
       <p className="text-xs text-muted">
-        Editable settings (logo, theme, grading system, session management) are planned for Phase 9.
+        Editable settings (logo, theme, academic session management) are planned for Phase 9.
       </p>
     </div>
   );

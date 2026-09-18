@@ -1,11 +1,17 @@
 import type {
   AttendanceRecord,
+  Exam,
+  ExamSubject,
   EventRecord,
   FeeRecord,
+  GradeBand,
   HomeworkRecord,
+  Mark,
+  MarkRevision,
   NoticeRecord,
   Period,
   Profile,
+  Result,
   School,
   SchoolClass,
   Section,
@@ -16,6 +22,16 @@ import type {
   TimetableEntry,
   UserRole,
 } from "@/types/database";
+
+export const DEFAULT_GRADING_SYSTEM: GradeBand[] = [
+  { min: 90, max: 100, grade: "A+" },
+  { min: 80, max: 89, grade: "A" },
+  { min: 70, max: 79, grade: "B+" },
+  { min: 60, max: 69, grade: "B" },
+  { min: 50, max: 59, grade: "C+" },
+  { min: 40, max: 49, grade: "C" },
+  { min: 0, max: 39, grade: "F" },
+];
 
 // Mirrors supabase/seed.sql — same IDs, same "Government Model Primary
 // School" demo school — so switching from demo mode to a real Supabase
@@ -36,6 +52,7 @@ export const demoSchool: School = {
   currency: "PKR",
   is_demo: true,
   working_days: [1, 2, 3, 4, 5, 6], // Monday–Saturday
+  grading_system: DEFAULT_GRADING_SYSTEM,
 };
 
 export const demoClasses: SchoolClass[] = [
@@ -132,6 +149,53 @@ export const demoTimetableEntries: TimetableEntry[] = [
 export const demoParentChildren: Record<string, string[]> = {
   "u-parent": ["st-1"],
 };
+
+// ---------------------------------------------------------------------
+// Examinations, schedule, marks, and results — Grade 1 / Section A.
+//   - "exam-aug": a fully published Monthly Test so the student/parent
+//     portal, result card, class results, and analytics have real data.
+//   - "exam-mid": a scheduled Mid-Term with only two subjects scheduled
+//     and no marks yet, to demo the schedule -> marks-entry workflow.
+// ---------------------------------------------------------------------
+
+export const demoExams: Exam[] = [
+  { id: "exam-aug", school_id: DEMO_SCHOOL_ID, name: "Monthly Test - August", exam_type: "monthly_test", start_date: "2025-08-25", end_date: "2025-08-29", status: "published", published_at: "2025-09-02T10:00:00.000Z", published_by: "u-admin" },
+  { id: "exam-mid", school_id: DEMO_SCHOOL_ID, name: "Mid-Term Examination", exam_type: "mid_term", start_date: "2025-10-13", end_date: "2025-10-17", status: "scheduled" },
+];
+
+export const demoExamSubjects: ExamSubject[] = [
+  { id: "exsub-aug-math", school_id: DEMO_SCHOOL_ID, exam_id: "exam-aug", class_id: "c-1", section_id: "s-1a", subject_id: "sub-math", exam_date: "2025-08-25", exam_room: "Room 1", invigilator_id: "t-1", total_marks: 100, passing_marks: 33 },
+  { id: "exsub-aug-eng", school_id: DEMO_SCHOOL_ID, exam_id: "exam-aug", class_id: "c-1", section_id: "s-1a", subject_id: "sub-eng", exam_date: "2025-08-26", exam_room: "Room 1", invigilator_id: "t-1", total_marks: 100, passing_marks: 33 },
+  { id: "exsub-aug-urd", school_id: DEMO_SCHOOL_ID, exam_id: "exam-aug", class_id: "c-1", section_id: "s-1a", subject_id: "sub-urd", exam_date: "2025-08-27", exam_room: "Room 1", invigilator_id: "t-2", total_marks: 100, passing_marks: 33 },
+  { id: "exsub-aug-isl", school_id: DEMO_SCHOOL_ID, exam_id: "exam-aug", class_id: "c-1", section_id: "s-1a", subject_id: "sub-isl", exam_date: "2025-08-28", exam_room: "Room 1", invigilator_id: "t-1", total_marks: 100, passing_marks: 33 },
+  { id: "exsub-aug-sci", school_id: DEMO_SCHOOL_ID, exam_id: "exam-aug", class_id: "c-1", section_id: "s-1a", subject_id: "sub-sci", exam_date: "2025-08-29", exam_room: "Room 1", invigilator_id: "t-3", total_marks: 100, passing_marks: 33 },
+
+  { id: "exsub-mid-math", school_id: DEMO_SCHOOL_ID, exam_id: "exam-mid", class_id: "c-1", section_id: "s-1a", subject_id: "sub-math", exam_date: "2025-10-13", exam_room: "Room 1", invigilator_id: "t-2", total_marks: 100, passing_marks: 33 },
+  { id: "exsub-mid-eng", school_id: DEMO_SCHOOL_ID, exam_id: "exam-mid", class_id: "c-1", section_id: "s-1a", subject_id: "sub-eng", exam_date: "2025-10-15", exam_room: "Room 1", invigilator_id: "t-3", total_marks: 100, passing_marks: 33 },
+];
+
+// st-1 Ali Hassan: 78+65+70+60+55 = 328/500 = 65.6% -> B
+// st-2 Fatima Noor: 88+92+85+90+80 = 435/500 = 87.0% -> A
+export const demoMarks: Mark[] = [
+  { id: "mk-aug-math-st1", school_id: DEMO_SCHOOL_ID, exam_subject_id: "exsub-aug-math", student_id: "st-1", obtained_marks: 78, status: "published", entered_by: "u-teacher" },
+  { id: "mk-aug-eng-st1", school_id: DEMO_SCHOOL_ID, exam_subject_id: "exsub-aug-eng", student_id: "st-1", obtained_marks: 65, status: "published", entered_by: "u-teacher" },
+  { id: "mk-aug-urd-st1", school_id: DEMO_SCHOOL_ID, exam_subject_id: "exsub-aug-urd", student_id: "st-1", obtained_marks: 70, status: "published", entered_by: "u-teacher" },
+  { id: "mk-aug-isl-st1", school_id: DEMO_SCHOOL_ID, exam_subject_id: "exsub-aug-isl", student_id: "st-1", obtained_marks: 60, status: "published", entered_by: "u-teacher" },
+  { id: "mk-aug-sci-st1", school_id: DEMO_SCHOOL_ID, exam_subject_id: "exsub-aug-sci", student_id: "st-1", obtained_marks: 55, status: "published", entered_by: "u-teacher" },
+
+  { id: "mk-aug-math-st2", school_id: DEMO_SCHOOL_ID, exam_subject_id: "exsub-aug-math", student_id: "st-2", obtained_marks: 88, status: "published", entered_by: "u-teacher" },
+  { id: "mk-aug-eng-st2", school_id: DEMO_SCHOOL_ID, exam_subject_id: "exsub-aug-eng", student_id: "st-2", obtained_marks: 92, status: "published", entered_by: "u-teacher" },
+  { id: "mk-aug-urd-st2", school_id: DEMO_SCHOOL_ID, exam_subject_id: "exsub-aug-urd", student_id: "st-2", obtained_marks: 85, status: "published", entered_by: "u-teacher" },
+  { id: "mk-aug-isl-st2", school_id: DEMO_SCHOOL_ID, exam_subject_id: "exsub-aug-isl", student_id: "st-2", obtained_marks: 90, status: "published", entered_by: "u-teacher" },
+  { id: "mk-aug-sci-st2", school_id: DEMO_SCHOOL_ID, exam_subject_id: "exsub-aug-sci", student_id: "st-2", obtained_marks: 80, status: "published", entered_by: "u-teacher" },
+];
+
+export const demoResults: Result[] = [
+  { id: "res-aug-st1", school_id: DEMO_SCHOOL_ID, exam_id: "exam-aug", student_id: "st-1", total_obtained: 328, total_marks: 500, percentage: 65.6, grade: "B", is_pass: true, passed_subjects: 5, failed_subjects: 0, class_rank: 2 },
+  { id: "res-aug-st2", school_id: DEMO_SCHOOL_ID, exam_id: "exam-aug", student_id: "st-2", total_obtained: 435, total_marks: 500, percentage: 87, grade: "A", is_pass: true, passed_subjects: 5, failed_subjects: 0, class_rank: 1 },
+];
+
+export const demoMarkRevisions: MarkRevision[] = [];
 
 function lastNDays(n: number): string[] {
   const days: string[] = [];

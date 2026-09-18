@@ -18,7 +18,17 @@ project brief. Status below reflects the current branch.
       own timetable + "My Classes/My Subjects" dashboard, student's own
       class, parent's per-child selector), printable class/teacher
       timetables. Attendance analytics deferred (not in this phase's scope).
-- [ ] **Phase 4** — Exams, Marks entry, Results/report cards, PDF export.
+- [x] **Phase 4** — Examinations (create/edit/archive, draft→scheduled→
+      ongoing→completed→published), Exam Schedule (subject/class/section/
+      date/time/room/invigilator) with room/invigilator/class conflict
+      detection, Marks entry (draft→submitted→verified→published) scoped
+      to a teacher's own assignments, configurable grading scale, automatic
+      result calculation (percentage/grade/pass-fail/rank), class results
+      with CSV export and print, per-subject analytics, printable A4 result
+      cards, student Academic History tab, published-mark revision audit
+      trail (reason/old/new/user/timestamp, enforced by a DB trigger),
+      results hidden from students/parents until the exam is published
+      (enforced by RLS, not just the UI).
 - [ ] **Phase 5** — Parents module, Student Promotion.
 - [ ] **Phase 6** — richer Homework/Notices/Events workflows (submissions,
       targeted audiences).

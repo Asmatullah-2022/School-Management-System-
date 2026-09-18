@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Card, EmptyState } from "@/components/ui/card";
-import type { AttendanceRecord, FeeRecord, HomeworkRecord, Student } from "@/types/database";
+import type { AttendanceRecord, Exam, FeeRecord, HomeworkRecord, Result, Student } from "@/types/database";
 
-const TABS = ["Overview", "Attendance", "Fees", "Homework"] as const;
+const TABS = ["Overview", "Attendance", "Fees", "Homework", "Academic History"] as const;
 
 const feeStatusStyles: Record<string, string> = {
   paid: "bg-success/10 text-success",
@@ -26,12 +27,16 @@ export function StudentProfileTabs({
   attendancePct,
   fees,
   homework,
+  results,
+  exams,
 }: {
   student: Student;
   attendance: AttendanceRecord[];
   attendancePct: number;
   fees: FeeRecord[];
   homework: HomeworkRecord[];
+  results: Result[];
+  exams: Exam[];
 }) {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Overview");
 
@@ -142,6 +147,37 @@ export function StudentProfileTabs({
                     <p className="mt-1 text-xs text-muted">Due {new Date(h.due_date).toLocaleDateString()}</p>
                   </li>
                 ))}
+              </ul>
+            )}
+          </div>
+        )}
+        {tab === "Academic History" && (
+          <div>
+            {results.length === 0 ? (
+              <EmptyState label="No exam results recorded yet." />
+            ) : (
+              <ul className="space-y-2">
+                {results.map((r) => {
+                  const exam = exams.find((e) => e.id === r.exam_id);
+                  return (
+                    <li key={r.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5 text-sm">
+                      <div>
+                        <p className="font-medium">{exam?.name ?? "Exam"}</p>
+                        <p className="text-xs text-muted">
+                          {r.total_obtained}/{r.total_marks} ({r.percentage}%) · Grade {r.grade}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.is_pass ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
+                          {r.is_pass ? "Pass" : "Fail"}
+                        </span>
+                        <Link href={`/print/result-card/${r.exam_id}/${student.id}`} target="_blank" className="text-xs font-medium text-primary hover:underline">
+                          Result Card
+                        </Link>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>

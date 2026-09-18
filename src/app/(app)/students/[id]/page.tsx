@@ -4,6 +4,8 @@ import { ArrowLeft } from "lucide-react";
 import { getStudent } from "@/lib/data/students";
 import { listClasses, listSections } from "@/lib/data/academics";
 import { listAttendance, listFees, listHomework } from "@/lib/data/records";
+import { listExams } from "@/lib/data/exams";
+import { listResults } from "@/lib/data/results";
 import { Card } from "@/components/ui/card";
 import { StudentProfileTabs } from "@/components/students/student-profile-tabs";
 
@@ -16,12 +18,14 @@ export default async function StudentProfilePage({
   const student = await getStudent(id);
   if (!student) notFound();
 
-  const [classes, sections, attendance, fees, homework] = await Promise.all([
+  const [classes, sections, attendance, fees, homework, exams, results] = await Promise.all([
     listClasses(),
     listSections(),
     listAttendance(),
     listFees(),
     listHomework(),
+    listExams(),
+    listResults(),
   ]);
 
   const className = classes.find((c) => c.id === student.class_id)?.name ?? "—";
@@ -29,6 +33,7 @@ export default async function StudentProfilePage({
   const studentAttendance = attendance.filter((a) => a.student_id === student.id);
   const studentFees = fees.filter((f) => f.student_id === student.id);
   const studentHomework = homework.filter((h) => h.class_id === student.class_id);
+  const studentResults = results.filter((r) => r.student_id === student.id);
 
   const presentCount = studentAttendance.filter((a) => a.status === "present").length;
   const attendancePct = studentAttendance.length
@@ -66,6 +71,8 @@ export default async function StudentProfilePage({
         attendancePct={attendancePct}
         fees={studentFees}
         homework={studentHomework}
+        results={studentResults}
+        exams={exams}
       />
     </div>
   );
