@@ -3,7 +3,9 @@ import type {
   Discount,
   Exam,
   ExamSubject,
+  EventAttendanceRecord,
   EventRecord,
+  EventResponse,
   FeeDiscount,
   FeePeriod,
   FeeRecord,
@@ -15,7 +17,9 @@ import type {
   LeaveRequest,
   Mark,
   MarkRevision,
+  NoticeAcknowledgement,
   NoticeRecord,
+  NotificationPreferences,
   Payment,
   PaymentAllocation,
   Period,
@@ -220,6 +224,12 @@ function lastNDays(n: number): string[] {
   return days;
 }
 
+function futureDate(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
 export const demoAttendance: AttendanceRecord[] = demoStudents.flatMap((s, idx) =>
   lastNDays(7).map((date, dayIdx) => ({
     id: `att-${s.id}-${date}`,
@@ -378,14 +388,30 @@ export const demoFinancialSettings: FinancialSettings = {
 };
 
 export const demoHomework: HomeworkRecord[] = [
-  { id: "hw-1", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-math", teacher_id: "t-1", title: "Practice Sheet: Addition", description: "Complete exercise 3.1 to 3.3", due_date: lastNDays(1)[0] },
-  { id: "hw-2", school_id: DEMO_SCHOOL_ID, class_id: "c-2", section_id: "s-2a", subject_id: "sub-eng", teacher_id: "t-2", title: "Story Writing", description: "Write a short story about your favourite animal", due_date: lastNDays(1)[0] },
+  {
+    id: "hw-1", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-math", teacher_id: "t-1",
+    title: "Practice Sheet: Addition", description: "Complete exercise 3.1 to 3.3", instructions: "Show your working for each question. Use a pencil.",
+    due_date: futureDate(2), assigned_date: lastNDays(1)[0], max_marks: 10, allow_late: true,
+    stage: "published", created_by: "u-teacher",
+  },
+  {
+    id: "hw-2", school_id: DEMO_SCHOOL_ID, class_id: "c-2", section_id: "s-2a", subject_id: "sub-eng", teacher_id: "t-2",
+    title: "Story Writing", description: "Write a short story about your favourite animal", instructions: "At least 150 words, include a title.",
+    due_date: lastNDays(1)[0], assigned_date: lastNDays(3)[0], max_marks: 20, allow_late: false,
+    stage: "published", created_by: "u-teacher",
+  },
+  {
+    id: "hw-3", school_id: DEMO_SCHOOL_ID, class_id: "c-1", section_id: "s-1a", subject_id: "sub-eng", teacher_id: "t-1",
+    title: "Reading Comprehension (Draft)", description: "Read chapter 4 and answer the questions.", instructions: null,
+    due_date: futureDate(7), assigned_date: new Date().toISOString().slice(0, 10), max_marks: 15, allow_late: false,
+    stage: "draft", created_by: "u-teacher",
+  },
 ];
 
 export const demoHomeworkAssignments: HomeworkAssignment[] = [
   { id: "hwa-1", school_id: DEMO_SCHOOL_ID, homework_id: "hw-1", student_id: "st-1", status: "pending" },
-  { id: "hwa-2", school_id: DEMO_SCHOOL_ID, homework_id: "hw-1", student_id: "st-2", status: "submitted", submitted_at: new Date().toISOString(), submission_url: null },
-  { id: "hwa-3", school_id: DEMO_SCHOOL_ID, homework_id: "hw-2", student_id: "st-3", status: "checked", remarks: "Good work!" },
+  { id: "hwa-2", school_id: DEMO_SCHOOL_ID, homework_id: "hw-1", student_id: "st-2", status: "submitted", submitted_at: new Date().toISOString(), submission_url: null, comment: "Done, was a bit tricky in Q3." },
+  { id: "hwa-3", school_id: DEMO_SCHOOL_ID, homework_id: "hw-2", student_id: "st-3", status: "checked", remarks: "Good work! Very creative story.", marks: 18, checked_by: "u-teacher" },
   { id: "hwa-4", school_id: DEMO_SCHOOL_ID, homework_id: "hw-2", student_id: "st-4", status: "late" },
 ];
 
@@ -407,15 +433,40 @@ export const demoLeaveRequests: LeaveRequest[] = [
 ];
 
 export const demoNotices: NoticeRecord[] = [
-  { id: "not-1", school_id: DEMO_SCHOOL_ID, title: "Mid-Term Exams Schedule Announced", description: "Mid-term examinations will begin from 1st October. Please check the exam schedule.", audience: "all", priority: "high", publish_date: new Date().toISOString().slice(0, 10) },
-  { id: "not-2", school_id: DEMO_SCHOOL_ID, title: "Parent-Teacher Meeting", description: "PTM will be held this Saturday at 10 AM in the main hall.", audience: "parents", priority: "normal", publish_date: new Date().toISOString().slice(0, 10) },
-  { id: "not-3", school_id: DEMO_SCHOOL_ID, title: "Grade 1-A: Science Fair Materials", description: "Grade 1-A students should bring their science fair materials by Friday.", audience: "class", class_id: "c-1", priority: "normal", publish_date: lastNDays(2)[0] },
+  { id: "not-1", school_id: DEMO_SCHOOL_ID, title: "Mid-Term Exams Schedule Announced", description: "Mid-term examinations will begin from 1st October. Please check the exam schedule.", audience: "all", priority: "urgent", requires_acknowledgement: true, publish_date: new Date().toISOString().slice(0, 10), created_by: "u-admin" },
+  { id: "not-2", school_id: DEMO_SCHOOL_ID, title: "Parent-Teacher Meeting", description: "PTM will be held this Saturday at 10 AM in the main hall.", audience: "parents", priority: "important", requires_acknowledgement: true, publish_date: new Date().toISOString().slice(0, 10), created_by: "u-admin" },
+  { id: "not-3", school_id: DEMO_SCHOOL_ID, title: "Grade 1-A: Science Fair Materials", description: "Grade 1-A students should bring their science fair materials by Friday.", audience: "class", class_id: "c-1", priority: "normal", publish_date: lastNDays(2)[0], created_by: "u-admin" },
+];
+
+export const demoNoticeAcknowledgements: NoticeAcknowledgement[] = [
+  { id: "nack-1", school_id: DEMO_SCHOOL_ID, notice_id: "not-1", profile_id: "u-teacher", acknowledged_at: new Date().toISOString() },
 ];
 
 export const demoEvents: EventRecord[] = [
-  { id: "ev-1", school_id: DEMO_SCHOOL_ID, title: "Annual Sports Day", description: "Inter-house sports competition for all classes.", start_date: lastNDays(1)[0], location: "School Playground" },
-  { id: "ev-2", school_id: DEMO_SCHOOL_ID, title: "Founders' Day Assembly", description: "A look back at the school's history, with performances from every class.", start_date: "2025-06-15", location: "Main Hall" },
+  {
+    id: "ev-1", school_id: DEMO_SCHOOL_ID, title: "Annual Sports Day", description: "Inter-house sports competition for all classes.",
+    event_type: "sports", start_date: futureDate(10), start_time: "09:00", end_time: "14:00", location: "School Playground",
+    organizer: "Muhammad Aslam", audience: "all", status: "scheduled", response_mode: "rsvp", track_attendance: false, created_by: "u-admin",
+  },
+  {
+    id: "ev-2", school_id: DEMO_SCHOOL_ID, title: "Founders' Day Assembly", description: "A look back at the school's history, with performances from every class.",
+    event_type: "school_function", start_date: "2025-06-15", start_time: "10:00", end_time: "12:00", location: "Main Hall",
+    organizer: "Muhammad Aslam", audience: "all", status: "completed", response_mode: "none", track_attendance: false, created_by: "u-admin",
+  },
+  {
+    id: "ev-3", school_id: DEMO_SCHOOL_ID, title: "Grade 1-A Parent-Teacher Meeting", description: "Discuss first-term progress with the class teacher.",
+    event_type: "parent_meeting", start_date: futureDate(5), start_time: "15:00", end_time: "17:00", location: "Room 1",
+    organizer: "Ayesha Siddiqui", audience: "class", class_id: "c-1", section_id: "s-1a", status: "scheduled", response_mode: "acknowledge", track_attendance: true, created_by: "u-admin",
+  },
 ];
+
+export const demoEventResponses: EventResponse[] = [
+  { id: "eresp-1", school_id: DEMO_SCHOOL_ID, event_id: "ev-1", profile_id: "u-parent", response: "going" },
+];
+
+export const demoEventAttendance: EventAttendanceRecord[] = [];
+
+export const demoNotificationPreferences: NotificationPreferences[] = [];
 
 export interface DemoUser {
   profile: Profile;

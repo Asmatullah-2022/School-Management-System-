@@ -422,6 +422,8 @@ export interface FinancialSettings {
   late_fee_percentage: number;
 }
 
+export type HomeworkStage = "draft" | "published" | "closed";
+
 export interface HomeworkRecord {
   id: string;
   school_id: string;
@@ -431,8 +433,18 @@ export interface HomeworkRecord {
   teacher_id?: string | null;
   title: string;
   description?: string | null;
+  instructions?: string | null;
+  attachment_url?: string | null;
   due_date: string;
+  assigned_date?: string;
+  max_marks?: number | null;
+  allow_late?: boolean;
+  stage?: HomeworkStage;
+  created_by?: string | null;
+  updated_at?: string;
 }
+
+export type NoticePriority = "normal" | "important" | "urgent";
 
 export interface NoticeRecord {
   id: string;
@@ -443,8 +455,18 @@ export interface NoticeRecord {
   audience: "all" | "teachers" | "students" | "parents" | "class";
   class_id?: string | null;
   priority: string;
+  requires_acknowledgement?: boolean;
   publish_date: string;
   expiry_date?: string | null;
+  created_by?: string | null;
+}
+
+export interface NoticeAcknowledgement {
+  id: string;
+  school_id: string;
+  notice_id: string;
+  profile_id: string;
+  acknowledged_at?: string;
 }
 
 export type LeaveStatus = "pending" | "approved" | "rejected";
@@ -477,15 +499,68 @@ export interface HomeworkAssignment {
   status: HomeworkStatus;
   submitted_at?: string | null;
   submission_url?: string | null;
+  comment?: string | null;
   remarks?: string | null;
+  marks?: number | null;
+  checked_by?: string | null;
+  updated_at?: string;
 }
+
+export type EventType = "academic" | "sports" | "parent_meeting" | "holiday" | "training" | "competition" | "school_function" | "meeting" | "other";
+export type EventStatus = "scheduled" | "cancelled" | "completed";
+export type EventResponseMode = "none" | "rsvp" | "acknowledge";
+export type EventResponseKind = "going" | "not_going" | "maybe" | "acknowledged";
+export type AttendanceMark = "expected" | "present" | "absent";
 
 export interface EventRecord {
   id: string;
   school_id: string;
   title: string;
   description?: string | null;
+  event_type?: EventType;
   start_date: string;
   end_date?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
   location?: string | null;
+  organizer?: string | null;
+  attachment_url?: string | null;
+  audience?: "all" | "teachers" | "students" | "parents" | "class";
+  class_id?: string | null;
+  section_id?: string | null;
+  status?: EventStatus;
+  response_mode?: EventResponseMode;
+  track_attendance?: boolean;
+  created_by?: string | null;
+}
+
+export interface EventResponse {
+  id: string;
+  school_id: string;
+  event_id: string;
+  profile_id: string;
+  response: EventResponseKind;
+  responded_at?: string;
+}
+
+export interface EventAttendanceRecord {
+  id: string;
+  school_id: string;
+  event_id: string;
+  profile_id: string;
+  status: AttendanceMark;
+  recorded_by?: string | null;
+  recorded_at?: string;
+}
+
+export interface NotificationPreferences {
+  id: string;
+  school_id: string;
+  profile_id: string;
+  homework: boolean;
+  events: boolean;
+  notices: boolean;
+  fee_reminders: boolean;
+  exam_notifications: boolean;
+  result_notifications: boolean;
 }

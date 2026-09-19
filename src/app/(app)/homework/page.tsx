@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth/session";
+import { Plus } from "lucide-react";
+import { getSession, isSchoolAdmin } from "@/lib/auth/session";
 import { getStudentIdForProfile, getChildStudentIdsForProfile } from "@/lib/data/people";
 import { getStudent } from "@/lib/data/students";
 import { listHomework } from "@/lib/data/records";
@@ -67,9 +69,16 @@ export default async function HomeworkPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold">Homework & Assignments</h1>
-        <p className="text-sm text-muted">{homework.length} active homework items</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">Homework & Assignments</h1>
+          <p className="text-sm text-muted">{homework.length} active homework items</p>
+        </div>
+        {(session.profile.role === "teacher" || isSchoolAdmin(session.profile.role)) && (
+          <Link href="/homework/manage" className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
+            <Plus size={16} /> Create Homework
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

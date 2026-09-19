@@ -2,6 +2,8 @@
 
 import { getSession, isFinanceStaff } from "@/lib/auth/session";
 import { recordPayment } from "@/lib/data/finance";
+import { getGuardianProfileIdsForStudent } from "@/lib/data/people";
+import { createNotificationForUser } from "@/lib/notifications/create";
 
 export async function recordPaymentAction(
   formData: FormData
@@ -35,6 +37,17 @@ export async function recordPaymentAction(
       notes,
       receivedBy: session.profile.id,
     });
+
+    const recipients = await getGuardianProfileIdsForStudent(studentId);
+    for (const profileId of recipients) {
+      await createNotificationForUser(profileId, session.school.id, {
+        title: "Payment Received",
+        message: `Payment of PKR ${payment.amount_paid.toLocaleString()} recorded — receipt ${payment.receipt_number}.`,
+        link: `/print/receipt/${payment.id}`,
+        category: "fees",
+      });
+    }
+
     return { paymentId: payment.id, receiptNumber: payment.receipt_number };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Could not record payment." };

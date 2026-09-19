@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getSession, isSchoolAdmin } from "@/lib/auth/session";
 import { getStudentIdForProfile } from "@/lib/data/people";
 import { createLeaveRequest, reviewLeaveRequest } from "@/lib/data/leave";
+import { createNotificationForUser } from "@/lib/notifications/create";
 
 export async function submitLeaveRequestAction(formData: FormData): Promise<{ error?: string } | void> {
   const session = await getSession();
@@ -44,6 +45,14 @@ export async function submitLeaveRequestAction(formData: FormData): Promise<{ er
 export async function reviewLeaveRequestAction(id: string, status: "approved" | "rejected", remarks?: string) {
   const session = await getSession();
   if (!session || !isSchoolAdmin(session.profile.role)) return { error: "Only a School Admin can review leave requests." };
-  await reviewLeaveRequest(id, status, session.profile.id, remarks);
+  const request = await reviewLeaveRequest(id, status, session.profile.id, remarks);
+  if (request) {
+    await createNotificationForUser(request.requester_profile_id, session.school.id, {
+      title: `Leave Request ${status === "approved" ? "Approved" : "Rejected"}`,
+      message: remarks || `Your leave request has been ${status}.`,
+      link: "/leave",
+      category: "leave",
+    });
+  }
   revalidatePath("/leave");
 }

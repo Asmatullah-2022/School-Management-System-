@@ -13,10 +13,14 @@ import {
   demoFeePeriods,
   demoFees,
   demoFeeStructures,
+  demoEventAttendance,
+  demoEventResponses,
   demoHomework,
   demoHomeworkAssignments,
   demoLeaveRequests,
   demoMarkRevisions,
+  demoNoticeAcknowledgements,
+  demoNotificationPreferences,
   demoMarks,
   demoNotices,
   demoPaymentAllocations,
@@ -46,14 +50,18 @@ import type {
   FeeRecord,
   FeeStructure,
   FinancialSettings,
+  EventAttendanceRecord,
+  EventResponse,
   GradeBand,
   HomeworkAssignment,
   HomeworkRecord,
   LeaveRequest,
   Mark,
   MarkRevision,
+  NoticeAcknowledgement,
   NoticeRecord,
   Notification,
+  NotificationPreferences,
   Payment,
   PaymentAllocation,
   Period,
@@ -99,6 +107,10 @@ const globalForDemo = globalThis as unknown as {
     homework: HomeworkRecord[];
     homeworkAssignments: HomeworkAssignment[];
     leaveRequests: LeaveRequest[];
+    eventResponses: EventResponse[];
+    eventAttendance: EventAttendanceRecord[];
+    noticeAcknowledgements: NoticeAcknowledgement[];
+    notificationPreferences: NotificationPreferences[];
     notices: NoticeRecord[];
     events: EventRecord[];
     periods: Period[];
@@ -135,6 +147,10 @@ function initStore() {
     homework: [...demoHomework],
     homeworkAssignments: [...demoHomeworkAssignments],
     leaveRequests: [...demoLeaveRequests],
+    eventResponses: [...demoEventResponses],
+    eventAttendance: [...demoEventAttendance],
+    noticeAcknowledgements: [...demoNoticeAcknowledgements],
+    notificationPreferences: [...demoNotificationPreferences],
     notices: [...demoNotices],
     events: [...demoEvents],
     periods: [...demoPeriods],
@@ -854,10 +870,13 @@ export const demoStore = {
   },
 
   listNotificationsFor: (profileId: string) => store.notifications.filter((n) => n.profile_id === profileId).sort((a, b) => (a.created_at! < b.created_at! ? 1 : -1)),
-  markNotificationRead: (id: string, profileId: string) => {
+  markNotificationRead: (id: string, profileId: string, isRead = true) => {
     const n = store.notifications.find((x) => x.id === id && x.profile_id === profileId);
-    if (n) n.is_read = true;
+    if (n) n.is_read = isRead;
     return n;
+  },
+  markAllNotificationsRead: (profileId: string) => {
+    for (const n of store.notifications) if (n.profile_id === profileId) n.is_read = true;
   },
   createNotification: (data: Omit<Notification, "id" | "school_id" | "is_read" | "created_at">) => {
     const notification: Notification = {
@@ -872,20 +891,45 @@ export const demoStore = {
   },
 
   listHomework: () => store.homework,
+  getHomework: (id: string) => store.homework.find((h) => h.id === id),
 
   // -------------------------------------------------------------------
-  // PHASE 6 — homework submissions ("assignments" table)
+  // PHASE 7 — homework authoring (teacher-scoped in the app layer; the
+  // real "assigned to this class/subject" gate lives in Supabase RLS —
+  // demo mode has no such enforcement engine, so callers must pass an
+  // already-authorized teacherId/classId/subjectId combination).
+  // -------------------------------------------------------------------
+  createHomework: (data: Omit<HomeworkRecord, "id" | "school_id" | "created_at" | "updated_at">) => {
+    const homework: HomeworkRecord = {
+      ...data,
+      id: randomUUID(),
+      school_id: store.school.id,
+      updated_at: new Date().toISOString(),
+    };
+    store.homework.unshift(homework);
+    return homework;
+  },
+  updateHomework: (id: string, data: Partial<HomeworkRecord>) => {
+    const idx = store.homework.findIndex((h) => h.id === id);
+    if (idx === -1) return undefined;
+    store.homework[idx] = { ...store.homework[idx], ...data, updated_at: new Date().toISOString() };
+    return store.homework[idx];
+  },
+
+  // -------------------------------------------------------------------
+  // PHASE 6/7 — homework submissions ("assignments" table)
   // -------------------------------------------------------------------
   listHomeworkAssignments: () => store.homeworkAssignments,
   getHomeworkAssignment: (homeworkId: string, studentId: string) =>
     store.homeworkAssignments.find((a) => a.homework_id === homeworkId && a.student_id === studentId),
-  submitHomework: (homeworkId: string, studentId: string, submissionUrl: string | null) => {
+  submitHomework: (homeworkId: string, studentId: string, submissionUrl: string | null, comment: string | null, isLate: boolean) => {
     const existing = store.homeworkAssignments.find((a) => a.homework_id === homeworkId && a.student_id === studentId);
     if (existing) {
       if (existing.status === "checked") throw new Error("This homework has already been checked and can no longer be resubmitted.");
-      existing.status = "submitted";
+      existing.status = isLate ? "late" : "submitted";
       existing.submitted_at = new Date().toISOString();
       existing.submission_url = submissionUrl;
+      existing.comment = comment;
       return existing;
     }
     const created: HomeworkAssignment = {
@@ -893,12 +937,25 @@ export const demoStore = {
       school_id: store.school.id,
       homework_id: homeworkId,
       student_id: studentId,
-      status: "submitted",
+      status: isLate ? "late" : "submitted",
       submitted_at: new Date().toISOString(),
       submission_url: submissionUrl,
+      comment,
     };
     store.homeworkAssignments.push(created);
     return created;
+  },
+  reviewHomeworkSubmission: (id: string, data: { marks?: number | null; remarks?: string | null; checkedBy: string }) => {
+    const idx = store.homeworkAssignments.findIndex((a) => a.id === id);
+    if (idx === -1) return undefined;
+    store.homeworkAssignments[idx] = {
+      ...store.homeworkAssignments[idx],
+      marks: data.marks ?? store.homeworkAssignments[idx].marks,
+      remarks: data.remarks ?? store.homeworkAssignments[idx].remarks,
+      status: "checked",
+      checked_by: data.checkedBy,
+    };
+    return store.homeworkAssignments[idx];
   },
 
   // -------------------------------------------------------------------
@@ -917,6 +974,90 @@ export const demoStore = {
     store.leaveRequests[idx] = { ...store.leaveRequests[idx], status, reviewed_by: reviewedBy, review_remarks: remarks ?? null };
     return store.leaveRequests[idx];
   },
+  // -------------------------------------------------------------------
+  // PHASE 7 — notices (create + acknowledgements)
+  // -------------------------------------------------------------------
   listNotices: () => store.notices,
+  createNotice: (data: Omit<NoticeRecord, "id" | "school_id">) => {
+    const notice: NoticeRecord = { ...data, id: randomUUID(), school_id: store.school.id };
+    store.notices.unshift(notice);
+    return notice;
+  },
+  listNoticeAcknowledgements: (noticeId?: string) =>
+    noticeId ? store.noticeAcknowledgements.filter((a) => a.notice_id === noticeId) : store.noticeAcknowledgements,
+  acknowledgeNotice: (noticeId: string, profileId: string) => {
+    const existing = store.noticeAcknowledgements.find((a) => a.notice_id === noticeId && a.profile_id === profileId);
+    if (existing) return existing;
+    const ack: NoticeAcknowledgement = { id: randomUUID(), school_id: store.school.id, notice_id: noticeId, profile_id: profileId, acknowledged_at: new Date().toISOString() };
+    store.noticeAcknowledgements.push(ack);
+    return ack;
+  },
+
+  // -------------------------------------------------------------------
+  // PHASE 7 — events (create/update + RSVP/acknowledgement + attendance)
+  // -------------------------------------------------------------------
   listEvents: () => store.events,
+  getEvent: (id: string) => store.events.find((e) => e.id === id),
+  createEvent: (data: Omit<EventRecord, "id" | "school_id">) => {
+    const event: EventRecord = { ...data, id: randomUUID(), school_id: store.school.id };
+    store.events.unshift(event);
+    return event;
+  },
+  updateEvent: (id: string, data: Partial<EventRecord>) => {
+    const idx = store.events.findIndex((e) => e.id === id);
+    if (idx === -1) return undefined;
+    store.events[idx] = { ...store.events[idx], ...data };
+    return store.events[idx];
+  },
+  listEventResponses: (eventId?: string) => (eventId ? store.eventResponses.filter((r) => r.event_id === eventId) : store.eventResponses),
+  respondToEvent: (eventId: string, profileId: string, response: EventResponse["response"]) => {
+    const idx = store.eventResponses.findIndex((r) => r.event_id === eventId && r.profile_id === profileId);
+    if (idx !== -1) {
+      store.eventResponses[idx] = { ...store.eventResponses[idx], response, responded_at: new Date().toISOString() };
+      return store.eventResponses[idx];
+    }
+    const created: EventResponse = { id: randomUUID(), school_id: store.school.id, event_id: eventId, profile_id: profileId, response, responded_at: new Date().toISOString() };
+    store.eventResponses.push(created);
+    return created;
+  },
+  listEventAttendance: (eventId?: string) => (eventId ? store.eventAttendance.filter((a) => a.event_id === eventId) : store.eventAttendance),
+  recordEventAttendance: (eventId: string, profileId: string, status: EventAttendanceRecord["status"], recordedBy: string) => {
+    const idx = store.eventAttendance.findIndex((a) => a.event_id === eventId && a.profile_id === profileId);
+    if (idx !== -1) {
+      store.eventAttendance[idx] = { ...store.eventAttendance[idx], status, recorded_by: recordedBy, recorded_at: new Date().toISOString() };
+      return store.eventAttendance[idx];
+    }
+    const created: EventAttendanceRecord = { id: randomUUID(), school_id: store.school.id, event_id: eventId, profile_id: profileId, status, recorded_by: recordedBy, recorded_at: new Date().toISOString() };
+    store.eventAttendance.push(created);
+    return created;
+  },
+
+  // -------------------------------------------------------------------
+  // PHASE 7 — notification preferences
+  // -------------------------------------------------------------------
+  getNotificationPreferences: (profileId: string): NotificationPreferences => {
+    const existing = store.notificationPreferences.find((p) => p.profile_id === profileId);
+    if (existing) return existing;
+    return {
+      id: `default-${profileId}`,
+      school_id: store.school.id,
+      profile_id: profileId,
+      homework: true,
+      events: true,
+      notices: true,
+      fee_reminders: true,
+      exam_notifications: true,
+      result_notifications: true,
+    };
+  },
+  updateNotificationPreferences: (profileId: string, data: Partial<Omit<NotificationPreferences, "id" | "school_id" | "profile_id">>) => {
+    const idx = store.notificationPreferences.findIndex((p) => p.profile_id === profileId);
+    if (idx !== -1) {
+      store.notificationPreferences[idx] = { ...store.notificationPreferences[idx], ...data };
+      return store.notificationPreferences[idx];
+    }
+    const created: NotificationPreferences = { ...demoStore.getNotificationPreferences(profileId), ...data, id: randomUUID() };
+    store.notificationPreferences.push(created);
+    return created;
+  },
 };

@@ -24,8 +24,10 @@ import { listResults } from "@/lib/data/results";
 import { listSubjects } from "@/lib/data/subjects";
 import { getTeacherIdForProfile, getStudentIdForProfile, getChildStudentIdsForProfile } from "@/lib/data/people";
 import { listHomeworkAssignments } from "@/lib/data/homework-submissions";
+import { listNotificationsFor } from "@/lib/data/notifications";
 import { buildChildSummary } from "@/lib/dashboard/child-summary";
 import { visibleNotices, classIdsForStudents } from "@/lib/notices/visibility";
+import { visibleEvents } from "@/lib/events/visibility";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, EmptyState } from "@/components/ui/card";
 import { TeacherDashboard } from "@/components/dashboard/teacher-dashboard";
@@ -46,7 +48,7 @@ export default async function DashboardPage() {
   if (!session) redirect("/login");
 
   if (session.profile.role === "parent" || session.profile.role === "student") {
-    const [classes, sections, subjects, teachers, periods, timetableEntries, attendance, homework, homeworkAssignments, exams, examSubjects, results, fees, notices] =
+    const [classes, sections, subjects, teachers, periods, timetableEntries, attendance, homework, homeworkAssignments, exams, examSubjects, results, fees, notices, events, notifications] =
       await Promise.all([
         listClasses(),
         listSections(),
@@ -62,6 +64,8 @@ export default async function DashboardPage() {
         listResults(),
         listFees(),
         listNotices(),
+        listEvents(),
+        listNotificationsFor(session.profile.id),
       ]);
 
     const ctx = { classes, sections, subjects, teachers, periods, timetableEntries, attendance, homework, homeworkAssignments, exams, examSubjects, results, fees };
@@ -73,7 +77,13 @@ export default async function DashboardPage() {
 
     const children = (await Promise.all(studentIds.map((id) => getStudent(id)))).filter((s): s is NonNullable<typeof s> => !!s);
     const summaries = children.map((child) => buildChildSummary(child, ctx));
-    const myNotices = visibleNotices(notices, session.profile.role, classIdsForStudents(children));
+    const myClassIds = classIdsForStudents(children);
+    const myNotices = visibleNotices(notices, session.profile.role, myClassIds);
+    const todayISOStr = todayISO();
+    const myUpcomingEvents = visibleEvents(events, session.profile.role, myClassIds)
+      .filter((e) => e.start_date >= todayISOStr && e.status !== "cancelled")
+      .sort((a, b) => (a.start_date < b.start_date ? -1 : 1));
+    const unreadCount = notifications.filter((n) => !n.is_read).length;
 
     const hour = new Date().getHours();
     const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
@@ -84,14 +94,20 @@ export default async function DashboardPage() {
           <h1 className="text-xl font-semibold sm:text-2xl">{greeting}, {session.profile.full_name.split(" ")[0]} 👋</h1>
           <p className="text-sm text-muted">{new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
         </div>
-        <ChildSummaryCards summaries={summaries} notices={myNotices} showChildHeader={session.profile.role === "parent"} />
+        <ChildSummaryCards
+          summaries={summaries}
+          notices={myNotices}
+          events={myUpcomingEvents}
+          unreadNotifications={unreadCount}
+          showChildHeader={session.profile.role === "parent"}
+        />
       </div>
     );
   }
 
   if (session.profile.role === "teacher") {
     const teacherId = await getTeacherIdForProfile(session.profile.id);
-    const [assignments, allEntries, periods, subjects, teachers, classes, sections, students, homework] = await Promise.all([
+    const [assignments, allEntries, periods, subjects, teachers, classes, sections, students, homework, events, notifications] = await Promise.all([
       listAssignments(),
       listTimetableEntries(),
       listPeriods(),
@@ -101,11 +117,18 @@ export default async function DashboardPage() {
       listSections(),
       listStudents(),
       listHomework(),
+      listEvents(),
+      listNotificationsFor(session.profile.id),
     ]);
     const myAssignments = teacherId ? assignments.filter((a) => a.teacher_id === teacherId) : [];
     const todayDow = new Date().getDay();
     const todayEntries = teacherId ? allEntries.filter((e) => e.teacher_id === teacherId && e.day_of_week === todayDow) : [];
     const myHomework = teacherId ? homework.filter((h) => h.teacher_id === teacherId) : [];
+    const todayISOStr = todayISO();
+    const upcomingEvents = visibleEvents(events, "teacher", [])
+      .filter((e) => e.start_date >= todayISOStr && e.status !== "cancelled")
+      .sort((a, b) => (a.start_date < b.start_date ? -1 : 1));
+    const unreadCount = notifications.filter((n) => !n.is_read).length;
 
     const hour = new Date().getHours();
     const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
@@ -131,6 +154,8 @@ export default async function DashboardPage() {
           students={students}
           homework={myHomework}
           today={todayDow}
+          upcomingEvents={upcomingEvents}
+          unreadNotifications={unreadCount}
         />
       </div>
     );

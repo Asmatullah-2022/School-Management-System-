@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  Bell,
   CalendarClock,
+  CalendarDays,
   CheckCircle2,
   ClipboardCheck,
   FileText,
@@ -13,7 +15,7 @@ import {
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, EmptyState } from "@/components/ui/card";
 import type { ChildSummary } from "@/lib/dashboard/child-summary";
-import type { NoticeRecord } from "@/types/database";
+import type { EventRecord, NoticeRecord } from "@/types/database";
 
 const ATTENDANCE_TONE: Record<string, "success" | "danger" | "warning" | "primary"> = {
   present: "success",
@@ -25,10 +27,14 @@ const ATTENDANCE_TONE: Record<string, "success" | "danger" | "warning" | "primar
 export function ChildSummaryCards({
   summaries,
   notices,
+  events = [],
+  unreadNotifications = 0,
   showChildHeader = true,
 }: {
   summaries: ChildSummary[];
   notices: NoticeRecord[];
+  events?: EventRecord[];
+  unreadNotifications?: number;
   showChildHeader?: boolean;
 }) {
   const [selectedId, setSelectedId] = useState(summaries[0]?.student.id);
@@ -84,6 +90,12 @@ export function ChildSummaryCards({
           value={`PKR ${active.outstandingBalance.toLocaleString()}`}
           icon={Wallet}
           tone={active.outstandingBalance > 0 ? "danger" : "success"}
+        />
+        <StatCard
+          label="Unread Notifications"
+          value={unreadNotifications}
+          icon={Bell}
+          tone={unreadNotifications > 0 ? "warning" : "success"}
         />
       </div>
 
@@ -151,6 +163,22 @@ export function ChildSummaryCards({
                 <li key={examSubject.id} className="flex items-center justify-between px-5 py-2.5 text-sm">
                   <span className="flex items-center gap-2"><FileText size={14} className="text-muted" /> {exam.name} <span className="text-xs text-muted">· {subjectName}</span></span>
                   <span className="text-muted">{examSubject.exam_date ? new Date(examSubject.exam_date).toLocaleDateString() : "—"}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card>
+          <CardHeader title="Upcoming Events" action={<Link href="/events" className="text-xs font-medium text-primary hover:underline">View all</Link>} />
+          {events.length === 0 ? (
+            <EmptyState label="No upcoming events." />
+          ) : (
+            <ul className="divide-y divide-border">
+              {events.slice(0, 5).map((e) => (
+                <li key={e.id} className="flex items-center justify-between px-5 py-2.5 text-sm">
+                  <span className="flex items-center gap-2"><CalendarDays size={14} className="text-muted" /> {e.title}</span>
+                  <span className="text-muted">{new Date(e.start_date).toLocaleDateString()}</span>
                 </li>
               ))}
             </ul>

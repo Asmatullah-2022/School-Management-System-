@@ -1,8 +1,10 @@
-import { BookOpen, GraduationCap, NotebookPen, Users } from "lucide-react";
+import Link from "next/link";
+import { Bell, BookOpen, CalendarDays, ClipboardCheck, GraduationCap, NotebookPen, PenSquare, Users } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, EmptyState } from "@/components/ui/card";
 import { TodaySchedule } from "@/components/timetable/today-schedule";
 import type {
+  EventRecord,
   HomeworkRecord,
   Period,
   SchoolClass,
@@ -13,6 +15,15 @@ import type {
   Teacher,
   TimetableEntry,
 } from "@/types/database";
+
+const QUICK_ACTIONS = [
+  { href: "/homework/manage/new", label: "Create Homework", icon: PenSquare },
+  { href: "/homework/manage", label: "View Submissions", icon: NotebookPen },
+  { href: "/attendance", label: "Mark Attendance", icon: ClipboardCheck },
+  { href: "/notices", label: "View Notices", icon: Bell },
+  { href: "/events", label: "View Events", icon: CalendarDays },
+  { href: "/notifications", label: "Notifications", icon: Bell },
+];
 
 export function TeacherDashboard({
   assignments,
@@ -25,6 +36,8 @@ export function TeacherDashboard({
   students,
   homework,
   today,
+  upcomingEvents = [],
+  unreadNotifications = 0,
 }: {
   assignments: SubjectAssignment[];
   todayEntries: TimetableEntry[];
@@ -36,6 +49,8 @@ export function TeacherDashboard({
   students: Student[];
   homework: HomeworkRecord[];
   today: number;
+  upcomingEvents?: EventRecord[];
+  unreadNotifications?: number;
 }) {
   const uniqueClassSections = Array.from(new Set(assignments.map((a) => `${a.class_id}|${a.section_id}`))).map((key) => {
     const [classId, sectionId] = key.split("|");
@@ -60,7 +75,29 @@ export function TeacherDashboard({
           tone={overdueHomework.length ? "danger" : "warning"}
           hint={overdueHomework.length ? `${overdueHomework.length} overdue` : "Homework due"}
         />
+        <StatCard
+          label="Unread Notifications"
+          value={unreadNotifications}
+          icon={Bell}
+          tone={unreadNotifications > 0 ? "warning" : "success"}
+        />
       </div>
+
+      <Card>
+        <CardHeader title="Quick Actions" />
+        <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-6">
+          {QUICK_ACTIONS.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex flex-col items-center gap-1.5 rounded-xl border border-border p-3 text-center text-xs font-medium transition hover:border-primary hover:bg-primary/5"
+            >
+              <Icon size={18} className="text-primary" />
+              {label}
+            </Link>
+          ))}
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
@@ -100,6 +137,22 @@ export function TeacherDashboard({
           sections={sections}
           secondary="class"
         />
+
+        <Card>
+          <CardHeader title="Upcoming Events" />
+          {upcomingEvents.length === 0 ? (
+            <EmptyState label="No upcoming events." />
+          ) : (
+            <ul className="divide-y divide-border">
+              {upcomingEvents.slice(0, 5).map((e) => (
+                <li key={e.id} className="flex items-center justify-between px-5 py-2.5 text-sm">
+                  <span>{e.title}</span>
+                  <span className="text-muted">{new Date(e.start_date).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
       </div>
     </div>
   );
