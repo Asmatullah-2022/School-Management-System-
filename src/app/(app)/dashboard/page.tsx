@@ -8,8 +8,9 @@ import {
   Wallet,
   NotebookPen,
 } from "lucide-react";
+import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
-import { listStudents } from "@/lib/data/students";
+import { listStudents, getStudent } from "@/lib/data/students";
 import { listTeachers } from "@/lib/data/teachers";
 import { listClasses, listSections } from "@/lib/data/academics";
 import { listAttendance, listEvents, listNotices, listHomework } from "@/lib/data/records";
@@ -17,11 +18,18 @@ import { listFees } from "@/lib/data/finance";
 import { listAssignments } from "@/lib/data/assignments";
 import { listPeriods } from "@/lib/data/periods";
 import { listTimetableEntries } from "@/lib/data/timetable";
+import { listExamSubjects } from "@/lib/data/exam-schedule";
+import { listExams } from "@/lib/data/exams";
+import { listResults } from "@/lib/data/results";
 import { listSubjects } from "@/lib/data/subjects";
-import { getTeacherIdForProfile } from "@/lib/data/people";
+import { getTeacherIdForProfile, getStudentIdForProfile, getChildStudentIdsForProfile } from "@/lib/data/people";
+import { listHomeworkAssignments } from "@/lib/data/homework-submissions";
+import { buildChildSummary } from "@/lib/dashboard/child-summary";
+import { visibleNotices, classIdsForStudents } from "@/lib/notices/visibility";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, EmptyState } from "@/components/ui/card";
 import { TeacherDashboard } from "@/components/dashboard/teacher-dashboard";
+import { ChildSummaryCards } from "@/components/dashboard/child-summary-cards";
 import {
   AttendanceChart,
   ClassDistributionChart,
@@ -35,8 +43,53 @@ function todayISO() {
 
 export default async function DashboardPage() {
   const session = await getSession();
+  if (!session) redirect("/login");
 
-  if (session?.profile.role === "teacher") {
+  if (session.profile.role === "parent" || session.profile.role === "student") {
+    const [classes, sections, subjects, teachers, periods, timetableEntries, attendance, homework, homeworkAssignments, exams, examSubjects, results, fees, notices] =
+      await Promise.all([
+        listClasses(),
+        listSections(),
+        listSubjects(),
+        listTeachers(),
+        listPeriods(),
+        listTimetableEntries(),
+        listAttendance(),
+        listHomework(),
+        listHomeworkAssignments(),
+        listExams(),
+        listExamSubjects(),
+        listResults(),
+        listFees(),
+        listNotices(),
+      ]);
+
+    const ctx = { classes, sections, subjects, teachers, periods, timetableEntries, attendance, homework, homeworkAssignments, exams, examSubjects, results, fees };
+
+    const studentIds =
+      session.profile.role === "student"
+        ? [await getStudentIdForProfile(session.profile.id)].filter((id): id is string => !!id)
+        : await getChildStudentIdsForProfile(session.profile.id);
+
+    const children = (await Promise.all(studentIds.map((id) => getStudent(id)))).filter((s): s is NonNullable<typeof s> => !!s);
+    const summaries = children.map((child) => buildChildSummary(child, ctx));
+    const myNotices = visibleNotices(notices, session.profile.role, classIdsForStudents(children));
+
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-xl font-semibold sm:text-2xl">{greeting}, {session.profile.full_name.split(" ")[0]} 👋</h1>
+          <p className="text-sm text-muted">{new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+        </div>
+        <ChildSummaryCards summaries={summaries} notices={myNotices} showChildHeader={session.profile.role === "parent"} />
+      </div>
+    );
+  }
+
+  if (session.profile.role === "teacher") {
     const teacherId = await getTeacherIdForProfile(session.profile.id);
     const [assignments, allEntries, periods, subjects, teachers, classes, sections, students, homework] = await Promise.all([
       listAssignments(),

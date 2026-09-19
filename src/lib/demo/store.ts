@@ -14,6 +14,8 @@ import {
   demoFees,
   demoFeeStructures,
   demoHomework,
+  demoHomeworkAssignments,
+  demoLeaveRequests,
   demoMarkRevisions,
   demoMarks,
   demoNotices,
@@ -45,7 +47,9 @@ import type {
   FeeStructure,
   FinancialSettings,
   GradeBand,
+  HomeworkAssignment,
   HomeworkRecord,
+  LeaveRequest,
   Mark,
   MarkRevision,
   NoticeRecord,
@@ -93,6 +97,8 @@ const globalForDemo = globalThis as unknown as {
     financialSettings: FinancialSettings;
     notifications: Notification[];
     homework: HomeworkRecord[];
+    homeworkAssignments: HomeworkAssignment[];
+    leaveRequests: LeaveRequest[];
     notices: NoticeRecord[];
     events: EventRecord[];
     periods: Period[];
@@ -127,6 +133,8 @@ function initStore() {
     financialSettings: { ...demoFinancialSettings },
     notifications: [],
     homework: [...demoHomework],
+    homeworkAssignments: [...demoHomeworkAssignments],
+    leaveRequests: [...demoLeaveRequests],
     notices: [...demoNotices],
     events: [...demoEvents],
     periods: [...demoPeriods],
@@ -846,6 +854,11 @@ export const demoStore = {
   },
 
   listNotificationsFor: (profileId: string) => store.notifications.filter((n) => n.profile_id === profileId).sort((a, b) => (a.created_at! < b.created_at! ? 1 : -1)),
+  markNotificationRead: (id: string, profileId: string) => {
+    const n = store.notifications.find((x) => x.id === id && x.profile_id === profileId);
+    if (n) n.is_read = true;
+    return n;
+  },
   createNotification: (data: Omit<Notification, "id" | "school_id" | "is_read" | "created_at">) => {
     const notification: Notification = {
       ...data,
@@ -859,6 +872,51 @@ export const demoStore = {
   },
 
   listHomework: () => store.homework,
+
+  // -------------------------------------------------------------------
+  // PHASE 6 — homework submissions ("assignments" table)
+  // -------------------------------------------------------------------
+  listHomeworkAssignments: () => store.homeworkAssignments,
+  getHomeworkAssignment: (homeworkId: string, studentId: string) =>
+    store.homeworkAssignments.find((a) => a.homework_id === homeworkId && a.student_id === studentId),
+  submitHomework: (homeworkId: string, studentId: string, submissionUrl: string | null) => {
+    const existing = store.homeworkAssignments.find((a) => a.homework_id === homeworkId && a.student_id === studentId);
+    if (existing) {
+      if (existing.status === "checked") throw new Error("This homework has already been checked and can no longer be resubmitted.");
+      existing.status = "submitted";
+      existing.submitted_at = new Date().toISOString();
+      existing.submission_url = submissionUrl;
+      return existing;
+    }
+    const created: HomeworkAssignment = {
+      id: randomUUID(),
+      school_id: store.school.id,
+      homework_id: homeworkId,
+      student_id: studentId,
+      status: "submitted",
+      submitted_at: new Date().toISOString(),
+      submission_url: submissionUrl,
+    };
+    store.homeworkAssignments.push(created);
+    return created;
+  },
+
+  // -------------------------------------------------------------------
+  // PHASE 6 — leave requests
+  // -------------------------------------------------------------------
+  listLeaveRequests: () => store.leaveRequests,
+  listLeaveRequestsFor: (profileId: string) => store.leaveRequests.filter((l) => l.requester_profile_id === profileId),
+  createLeaveRequest: (data: Omit<LeaveRequest, "id" | "school_id" | "status" | "reviewed_by" | "review_remarks">) => {
+    const request: LeaveRequest = { ...data, id: randomUUID(), school_id: store.school.id, status: "pending" };
+    store.leaveRequests.unshift(request);
+    return request;
+  },
+  reviewLeaveRequest: (id: string, status: "approved" | "rejected", reviewedBy: string, remarks?: string) => {
+    const idx = store.leaveRequests.findIndex((l) => l.id === id);
+    if (idx === -1) return undefined;
+    store.leaveRequests[idx] = { ...store.leaveRequests[idx], status, reviewed_by: reviewedBy, review_remarks: remarks ?? null };
+    return store.leaveRequests[idx];
+  },
   listNotices: () => store.notices,
   listEvents: () => store.events,
 };

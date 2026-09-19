@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { getSession, isSchoolStaff } from "@/lib/auth/session";
 import { getStudent } from "@/lib/data/students";
 import { listClasses, listSections } from "@/lib/data/academics";
 import { listAttendance, listHomework } from "@/lib/data/records";
@@ -15,6 +16,10 @@ export default async function StudentProfilePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  if (!isSchoolStaff(session.profile.role)) redirect("/dashboard");
+
   const { id } = await params;
   const student = await getStudent(id);
   if (!student) notFound();

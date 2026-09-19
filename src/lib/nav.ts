@@ -19,6 +19,9 @@ import {
   BarChart3,
   ShieldCheck,
   Settings,
+  Bell,
+  UserCircle,
+  CalendarOff,
 } from "lucide-react";
 import type { UserRole } from "@/types/database";
 
@@ -53,6 +56,7 @@ export const navSections: NavSection[] = [
       { label: "All Students", href: "/students", icon: Users, roles: [...ADMIN, "teacher", "accountant"], status: "ready" },
       { label: "Add Student", href: "/students/new", icon: Users, roles: ADMIN, status: "ready" },
       { label: "Student Promotion", href: "/modules/promotion", icon: Users, roles: ADMIN, status: "planned", phase: "Phase 9" },
+      { label: "My Children", href: "/children", icon: Users, roles: ["parent"], status: "ready" },
     ],
   },
   {
@@ -76,6 +80,7 @@ export const navSections: NavSection[] = [
     title: "Attendance",
     items: [
       { label: "Daily Attendance", href: "/attendance", icon: ClipboardCheck, roles: [...ADMIN, "teacher"], status: "ready" },
+      { label: "Attendance", href: "/attendance", icon: ClipboardCheck, roles: ["parent", "student"], status: "ready" },
       { label: "Attendance Analytics", href: "/modules/attendance-analytics", icon: ClipboardCheck, roles: ADMIN, status: "planned", phase: "Phase 3" },
     ],
   },
@@ -83,6 +88,7 @@ export const navSections: NavSection[] = [
     title: "Examinations",
     items: [
       { label: "Exams & Marks", href: "/exams", icon: NotebookPen, roles: [...ADMIN, "teacher"], status: "ready" },
+      { label: "Exams", href: "/exams", icon: NotebookPen, roles: ["parent", "student"], status: "ready" },
       { label: "Results", href: "/results", icon: FileText, roles: ALL, status: "ready" },
     ],
   },
@@ -124,7 +130,17 @@ export const navSections: NavSection[] = [
     title: "Administration",
     items: [
       { label: "Users & Roles", href: "/modules/users", icon: ShieldCheck, roles: ADMIN, status: "planned", phase: "Phase 9" },
+      { label: "Leave Requests", href: "/leave", icon: CalendarOff, roles: ADMIN, status: "ready" },
       { label: "Settings", href: "/settings", icon: Settings, roles: ADMIN, status: "ready" },
+    ],
+  },
+  {
+    title: "My Account",
+    items: [
+      { label: "Leave", href: "/leave", icon: CalendarOff, roles: ["parent", "student"], status: "ready" },
+      { label: "Notifications", href: "/notifications", icon: Bell, roles: ["parent", "student"], status: "ready" },
+      { label: "Profile", href: "/profile", icon: UserCircle, roles: ["parent", "student"], status: "ready" },
+      { label: "Settings", href: "/profile", icon: Settings, roles: ["parent", "student"], status: "ready" },
     ],
   },
 ];

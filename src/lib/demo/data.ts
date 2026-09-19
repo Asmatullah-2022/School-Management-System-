@@ -10,7 +10,9 @@ import type {
   FeeStructure,
   FinancialSettings,
   GradeBand,
+  HomeworkAssignment,
   HomeworkRecord,
+  LeaveRequest,
   Mark,
   MarkRevision,
   NoticeRecord,
@@ -107,7 +109,7 @@ export const demoStudents: Student[] = [
   { id: "st-2", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-002", full_name: "Fatima Noor", father_name: "Shahid Noor", mother_name: "Rubina Shahid", gender: "female", date_of_birth: "2018-07-20", contact_number: "0301-2222222", address: "Street 8, Model Town", district: "Lahore", province: "Punjab", class_id: "c-1", section_id: "s-1a", roll_number: "2", admission_date: "2024-04-01", blood_group: "B+", status: "active" },
   { id: "st-3", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-003", full_name: "Hamza Khan", father_name: "Nasir Khan", mother_name: "Farah Nasir", gender: "male", date_of_birth: "2017-02-15", contact_number: "0301-3333333", address: "Street 2, Township", district: "Lahore", province: "Punjab", class_id: "c-2", section_id: "s-2a", roll_number: "1", admission_date: "2023-04-01", blood_group: "A+", status: "active" },
   { id: "st-4", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-004", full_name: "Zainab Bibi", father_name: "Aslam Ali", mother_name: "Kausar Aslam", gender: "female", date_of_birth: "2017-09-09", contact_number: "0301-4444444", address: "Street 3, Township", district: "Lahore", province: "Punjab", class_id: "c-2", section_id: "s-2a", roll_number: "2", admission_date: "2023-04-01", blood_group: "AB+", status: "active" },
-  { id: "st-5", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-005", full_name: "Usman Tariq", father_name: "Tariq Mehmood", mother_name: "Nasreen Tariq", gender: "male", date_of_birth: "2016-11-01", contact_number: "0301-5555555", address: "Street 1, Gulberg", district: "Lahore", province: "Punjab", class_id: "c-3", section_id: "s-3a", roll_number: "1", admission_date: "2022-04-01", blood_group: "O-", status: "active" },
+  { id: "st-5", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-005", full_name: "Usman Hassan", father_name: "Imran Hassan", mother_name: "Sadia Imran", gender: "male", date_of_birth: "2016-11-01", contact_number: "0301-1111111", address: "Street 5, Model Town", district: "Lahore", province: "Punjab", class_id: "c-3", section_id: "s-3a", roll_number: "1", admission_date: "2022-04-01", blood_group: "O-", status: "active" },
   { id: "st-6", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-006", full_name: "Ayesha Batool", father_name: "Farhan Sheikh", mother_name: "Nadia Farhan", gender: "female", date_of_birth: "2019-01-22", contact_number: "0301-6666666", address: "Street 4, Gulberg", district: "Lahore", province: "Punjab", class_id: "c-nursery", section_id: null, roll_number: "1", admission_date: "2025-04-01", blood_group: "B-", status: "active" },
   { id: "st-7", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-007", full_name: "Bilal Saeed", father_name: "Saeed Ahmed", mother_name: "Shazia Saeed", gender: "male", date_of_birth: "2016-03-18", contact_number: "0301-7777777", address: "Street 9, Johar Town", district: "Lahore", province: "Punjab", class_id: "c-4", section_id: "s-4a", roll_number: "1", admission_date: "2022-04-01", blood_group: "A-", status: "active" },
   { id: "st-8", school_id: DEMO_SCHOOL_ID, admission_number: "GMPS-2025-008", full_name: "Mahnoor Fatima", father_name: "Waqas Ahmed", mother_name: "Sobia Waqas", gender: "female", date_of_birth: "2015-06-30", contact_number: "0301-8888888", address: "Street 6, Johar Town", district: "Lahore", province: "Punjab", class_id: "c-5", section_id: "s-5a", roll_number: "1", admission_date: "2021-04-01", blood_group: "O+", status: "active" },
@@ -156,7 +158,8 @@ export const demoTimetableEntries: TimetableEntry[] = [
 
 /** Which student ids a parent profile can see (student_parents equivalent for demo mode). */
 export const demoParentChildren: Record<string, string[]> = {
-  "u-parent": ["st-1"],
+  "u-parent": ["st-1", "st-5"], // two children, different classes — exercises the child selector
+  "u-parent2": ["st-3"], // single child — the common case
 };
 
 // ---------------------------------------------------------------------
@@ -379,13 +382,39 @@ export const demoHomework: HomeworkRecord[] = [
   { id: "hw-2", school_id: DEMO_SCHOOL_ID, class_id: "c-2", section_id: "s-2a", subject_id: "sub-eng", teacher_id: "t-2", title: "Story Writing", description: "Write a short story about your favourite animal", due_date: lastNDays(1)[0] },
 ];
 
+export const demoHomeworkAssignments: HomeworkAssignment[] = [
+  { id: "hwa-1", school_id: DEMO_SCHOOL_ID, homework_id: "hw-1", student_id: "st-1", status: "pending" },
+  { id: "hwa-2", school_id: DEMO_SCHOOL_ID, homework_id: "hw-1", student_id: "st-2", status: "submitted", submitted_at: new Date().toISOString(), submission_url: null },
+  { id: "hwa-3", school_id: DEMO_SCHOOL_ID, homework_id: "hw-2", student_id: "st-3", status: "checked", remarks: "Good work!" },
+  { id: "hwa-4", school_id: DEMO_SCHOOL_ID, homework_id: "hw-2", student_id: "st-4", status: "late" },
+];
+
+export const demoLeaveRequests: LeaveRequest[] = [
+  {
+    id: "leave-1",
+    school_id: DEMO_SCHOOL_ID,
+    requester_profile_id: "u-parent",
+    requester_role: "parent",
+    student_id: "st-1",
+    start_date: lastNDays(10)[0],
+    end_date: lastNDays(9)[0],
+    reason: "Family function out of town.",
+    status: "approved",
+    reviewed_by: "u-admin",
+    review_remarks: "Approved.",
+    created_at: new Date(Date.now() - 12 * 86400000).toISOString(),
+  },
+];
+
 export const demoNotices: NoticeRecord[] = [
   { id: "not-1", school_id: DEMO_SCHOOL_ID, title: "Mid-Term Exams Schedule Announced", description: "Mid-term examinations will begin from 1st October. Please check the exam schedule.", audience: "all", priority: "high", publish_date: new Date().toISOString().slice(0, 10) },
   { id: "not-2", school_id: DEMO_SCHOOL_ID, title: "Parent-Teacher Meeting", description: "PTM will be held this Saturday at 10 AM in the main hall.", audience: "parents", priority: "normal", publish_date: new Date().toISOString().slice(0, 10) },
+  { id: "not-3", school_id: DEMO_SCHOOL_ID, title: "Grade 1-A: Science Fair Materials", description: "Grade 1-A students should bring their science fair materials by Friday.", audience: "class", class_id: "c-1", priority: "normal", publish_date: lastNDays(2)[0] },
 ];
 
 export const demoEvents: EventRecord[] = [
   { id: "ev-1", school_id: DEMO_SCHOOL_ID, title: "Annual Sports Day", description: "Inter-house sports competition for all classes.", start_date: lastNDays(1)[0], location: "School Playground" },
+  { id: "ev-2", school_id: DEMO_SCHOOL_ID, title: "Founders' Day Assembly", description: "A look back at the school's history, with performances from every class.", start_date: "2025-06-15", location: "Main Hall" },
 ];
 
 export interface DemoUser {
@@ -399,7 +428,8 @@ export const demoUsers: DemoUser[] = [
   { profile: { id: "u-admin", school_id: DEMO_SCHOOL_ID, role: "school_admin", full_name: "Muhammad Aslam", is_active: true }, label: "School Admin / Headteacher", description: "Runs Government Model Primary School" },
   { profile: { id: "u-teacher", school_id: DEMO_SCHOOL_ID, role: "teacher", full_name: "Ayesha Siddiqui", is_active: true }, label: "Teacher", description: "Class 1-A teacher" },
   { profile: { id: "u-accountant", school_id: DEMO_SCHOOL_ID, role: "accountant", full_name: "Nadia Farooq", is_active: true }, label: "Accountant", description: "Manages fees & finance" },
-  { profile: { id: "u-parent", school_id: DEMO_SCHOOL_ID, role: "parent", full_name: "Imran Hassan", is_active: true }, label: "Parent", description: "Father of Ali Hassan (Grade 1-A)" },
+  { profile: { id: "u-parent", school_id: DEMO_SCHOOL_ID, role: "parent", full_name: "Imran Hassan", is_active: true }, label: "Parent (2 children)", description: "Father of Ali Hassan (Grade 1-A) & Usman Hassan (Grade 3-A)" },
+  { profile: { id: "u-parent2", school_id: DEMO_SCHOOL_ID, role: "parent", full_name: "Nasir Khan", is_active: true }, label: "Parent (1 child)", description: "Father of Hamza Khan (Grade 2-A)" },
   { profile: { id: "u-student", school_id: DEMO_SCHOOL_ID, role: "student", full_name: "Ali Hassan", is_active: true }, label: "Student", description: "Grade 1-A" },
 ];
 

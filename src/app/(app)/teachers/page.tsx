@@ -1,10 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Plus } from "lucide-react";
+import { getSession, isSchoolAdmin } from "@/lib/auth/session";
 import { listTeachers } from "@/lib/data/teachers";
 import { Card } from "@/components/ui/card";
 import { TeachersTable } from "@/components/teachers/teachers-table";
 
 export default async function TeachersPage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  if (!isSchoolAdmin(session.profile.role)) redirect("/dashboard");
+
   const teachers = await listTeachers();
 
   return (

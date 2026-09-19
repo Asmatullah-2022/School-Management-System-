@@ -1,9 +1,15 @@
+import { redirect } from "next/navigation";
+import { getSession, isSchoolAdmin } from "@/lib/auth/session";
 import { listClasses, listSections } from "@/lib/data/academics";
 import { listStudents } from "@/lib/data/students";
 import { listTeachers } from "@/lib/data/teachers";
 import { Card, CardHeader } from "@/components/ui/card";
 
 export default async function ClassesPage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  if (!isSchoolAdmin(session.profile.role)) redirect("/dashboard");
+
   const [classes, sections, students, teachers] = await Promise.all([
     listClasses(),
     listSections(),

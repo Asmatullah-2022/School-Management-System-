@@ -12,6 +12,19 @@ export async function listNotificationsFor(profileId: string): Promise<Notificat
   return data as Notification[];
 }
 
+/** Marks one of the caller's own notifications as read. RLS additionally
+ * guards that a non-staff caller may only ever flip is_read — never
+ * retitle, redirect, or reassign someone else's notification. */
+export async function markNotificationRead(id: string, profileId: string): Promise<void> {
+  if (isDemoMode()) {
+    demoStore.markNotificationRead(id, profileId);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.from("notifications").update({ is_read: true }).eq("id", id).eq("profile_id", profileId);
+  if (error) throw error;
+}
+
 /** Creates a real in-app notification. There is no SMS/WhatsApp integration
  * in this system — reminders are delivered only inside the app's own
  * notification list, never claimed as sent via an external channel. */

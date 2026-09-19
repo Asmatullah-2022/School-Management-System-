@@ -1,11 +1,17 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Plus } from "lucide-react";
+import { getSession, isSchoolStaff } from "@/lib/auth/session";
 import { listStudents } from "@/lib/data/students";
 import { listClasses, listSections } from "@/lib/data/academics";
 import { Card } from "@/components/ui/card";
 import { StudentsTable } from "@/components/students/students-table";
 
 export default async function StudentsPage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  if (!isSchoolStaff(session.profile.role)) redirect("/dashboard");
+
   const [students, classes, sections] = await Promise.all([
     listStudents(),
     listClasses(),

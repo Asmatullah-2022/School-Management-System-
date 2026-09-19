@@ -12,10 +12,12 @@ import { Topbar } from "@/components/topbar";
 export function AppShell({
   profile,
   school,
+  unreadCount = 0,
   children,
 }: {
   profile: Profile;
   school: School;
+  unreadCount?: number;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -47,7 +49,7 @@ export function AppShell({
                 const active = pathname === item.href || pathname.startsWith(item.href + "/");
                 const Icon = item.icon;
                 return (
-                  <li key={item.href}>
+                  <li key={`${item.href}-${item.label}`}>
                     <Link
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
@@ -100,7 +102,7 @@ export function AppShell({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar profile={profile} roleLabel={roleLabels[profile.role]} onMenuClick={() => setMobileOpen(true)} />
+        <Topbar profile={profile} roleLabel={roleLabels[profile.role]} unreadCount={unreadCount} onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 overflow-x-hidden px-4 py-5 sm:px-6 lg:px-8">{children}</main>
       </div>
 

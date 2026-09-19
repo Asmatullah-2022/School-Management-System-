@@ -47,14 +47,39 @@ project brief. Status below reflects the current branch.
       real charts. RLS: School Admin/Accountant/Super Admin only for every
       finance table; teachers get none; parents/students see only their
       own/child's charges, payments, and refunds.
-- [ ] **Phase 6** — Parent + Student portal depth (richer Homework/Notices/
-      Events workflows — submissions, targeted audiences — building on the
-      fee/result visibility already wired in Phases 4-5).
-- [ ] **Phase 7** — Library, Transport, Inventory.
-- [ ] **Phase 8** — Certificates, Reports Center, PDF generation.
-- [ ] **Phase 9** — Users & Roles admin UI, editable School Settings,
+- [x] **Phase 6** — Parent + Student Portals: dedicated dashboards (My
+      Children switcher, today's attendance/class/homework/result/fees/
+      exams/notices cards), a My Children directory + per-child profile,
+      an Attendance overview (daily/weekly/monthly/session views, a
+      calendar grid, trend chart), an Exam Schedule view (upcoming/past,
+      scoped to the child's class/section), Homework submissions (the
+      long-unused `assignments` table finally wired up: student submits,
+      status pending→submitted/late→checked), a Leave Requests page
+      (submit/status/history for parent/student, review for School Admin,
+      finally using the long-unused `leave_requests` table), a real
+      Notification Center (mark-as-read, topbar badge wired to real
+      unread counts), a Profile page (own info + a student self-service
+      contact-details form, DB-trigger-guarded against editing admin
+      fields), and audience/expiry-aware Notices + upcoming/past Events.
+      Closed a set of pre-existing RLS gaps left over from Phase 1's
+      generic tenant policy (`students`/`parents`/`student_parents`/
+      `attendance`/`assignments`/`leave_requests`/`notifications` were
+      previously readable tenant-wide by any authenticated user); added
+      matching server-side route guards on staff-only pages that had only
+      ever been hidden from the sidebar, not actually protected
+      (`/students`, `/teachers`, `/classes`, `/attendance` marking).
+      Verified live against real Postgres and Playwright: cross-family
+      data isolation, direct-URL/ID probing, identity-spoofed leave
+      submission, and a student trying to self-approve homework all
+      correctly rejected.
+- [ ] **Phase 7** — Homework + Notifications + Events enhancement (richer
+      targeting, attachments, richer notification triggers), building on
+      the Phase 6 portal foundation.
+- [ ] **Phase 8** — Library, Transport, Inventory.
+- [ ] **Phase 9** — Certificates, Reports Center, PDF generation.
+- [ ] **Phase 10** — Users & Roles admin UI, editable School Settings,
       performance/security hardening pass.
-- [ ] **Phase 10** — Final testing pass, PWA manifest, deployment prep.
+- [ ] **Phase 11** — Final testing pass, PWA manifest, deployment prep.
 
 Modules not yet built show a "coming soon" placeholder in the sidebar
 (`src/app/(app)/modules/[slug]/page.tsx`) naming their phase, so the full

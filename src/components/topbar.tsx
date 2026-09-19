@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Bell, LogOut, Menu, Search, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/lib/use-theme";
 import { logout } from "@/lib/auth/actions";
@@ -8,10 +9,12 @@ import type { Profile } from "@/types/database";
 export function Topbar({
   profile,
   roleLabel,
+  unreadCount = 0,
   onMenuClick,
 }: {
   profile: Profile;
   roleLabel: string;
+  unreadCount?: number;
   onMenuClick: () => void;
 }) {
   const { isDark, toggle } = useTheme();
@@ -44,12 +47,16 @@ export function Topbar({
           {isDark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        <button aria-label="Notifications" className="relative rounded-lg p-2 hover:bg-background">
+        <Link href="/notifications" aria-label="Notifications" className="relative rounded-lg p-2 hover:bg-background">
           <Bell size={18} />
-          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-danger" />
-        </button>
+          {unreadCount > 0 && (
+            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-white">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </Link>
 
-        <div className="hidden items-center gap-2 border-l border-border pl-3 sm:flex">
+        <Link href="/profile" className="hidden items-center gap-2 border-l border-border pl-3 sm:flex">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
             {profile.full_name.charAt(0)}
           </div>
@@ -57,7 +64,7 @@ export function Topbar({
             <p className="text-sm font-medium">{profile.full_name}</p>
             <p className="text-xs text-muted">{roleLabel}</p>
           </div>
-        </div>
+        </Link>
 
         <form action={logout}>
           <button

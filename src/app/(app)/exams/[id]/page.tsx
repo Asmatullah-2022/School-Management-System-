@@ -36,6 +36,7 @@ const marksStatusStyles: Record<string, string> = {
 export default async function ExamDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) redirect("/login");
+  if (session.profile.role === "parent" || session.profile.role === "student") redirect("/exams");
 
   const { id } = await params;
   const [exam, examSubjects, classes, sections, subjects, teachers, assignments, marks, students] = await Promise.all([

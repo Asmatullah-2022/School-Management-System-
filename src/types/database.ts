@@ -439,10 +439,45 @@ export interface NoticeRecord {
   school_id: string;
   title: string;
   description?: string | null;
+  attachment_url?: string | null;
   audience: "all" | "teachers" | "students" | "parents" | "class";
+  class_id?: string | null;
   priority: string;
   publish_date: string;
   expiry_date?: string | null;
+}
+
+export type LeaveStatus = "pending" | "approved" | "rejected";
+
+export interface LeaveRequest {
+  id: string;
+  school_id: string;
+  requester_profile_id: string;
+  requester_role: UserRole;
+  student_id?: string | null;
+  teacher_id?: string | null;
+  start_date: string;
+  end_date: string;
+  reason: string;
+  status: LeaveStatus;
+  reviewed_by?: string | null;
+  review_remarks?: string | null;
+  created_at?: string;
+}
+
+export type HomeworkStatus = "pending" | "submitted" | "late" | "checked";
+
+/** A single student's submission record for one homework item (the
+ * `assignments` table — unrelated to Phase 3's SubjectAssignment). */
+export interface HomeworkAssignment {
+  id: string;
+  school_id: string;
+  homework_id: string;
+  student_id: string;
+  status: HomeworkStatus;
+  submitted_at?: string | null;
+  submission_url?: string | null;
+  remarks?: string | null;
 }
 
 export interface EventRecord {

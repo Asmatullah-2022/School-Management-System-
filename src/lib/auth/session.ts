@@ -55,6 +55,12 @@ export function isSchoolAdmin(role: Profile["role"]): boolean {
   return role === "super_admin" || role === "school_admin";
 }
 
+/** Any school-staff role (super_admin/school_admin/teacher/accountant) —
+ * used to gate pages built for staff, not parents/students. */
+export function isSchoolStaff(role: Profile["role"]): boolean {
+  return role === "super_admin" || role === "school_admin" || role === "teacher" || role === "accountant";
+}
+
 /** Finance-privileged roles: School Admin, Accountant, Super Admin. Teachers
  * never get finance access, and Accountants never get unrelated admin access
  * — this is the single gate every Phase 5 (Fees & Finance) route/action uses. */
