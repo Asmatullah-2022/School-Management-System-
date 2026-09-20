@@ -22,13 +22,36 @@ and explore a fully working dashboard backed by realistic sample data
 
 ## Connecting a real Supabase project
 
+This repository's `supabase/migrations/` files are plain numbered SQL
+scripts, not a `supabase init`-managed project — there is no CLI-tracked
+migration history. Before running anything against an existing database,
+run `supabase/check_migration_status.sql` in the SQL editor first to see
+which migrations (if any) have already been applied; re-running an
+already-applied migration is not safe (most statements are `create table`/
+`create policy`, not `if not exists` guarded).
+
 1. Create a project at https://supabase.com.
-2. Run `supabase/migrations/0001_schema.sql` then `0002_rls.sql` in the SQL
-   editor (schema + row-level security for multi-tenant isolation).
-3. Optionally run `supabase/seed.sql` for the same demo data used in demo
-   mode, so switching over doesn't change what you see.
-4. Copy `.env.example` to `.env.local` and fill in your project's URL and
-   anon key. Demo mode turns off automatically once those are set.
+2. Run `supabase/check_migration_status.sql` and confirm the target
+   database is empty (all rows `f`) before a first-time setup, or note
+   exactly which migrations are already applied before adding new ones.
+3. Run every file in `supabase/migrations/` **in numeric order**,
+   `0001` through `0010` (currently: `0001_schema.sql`, `0002_rls.sql`,
+   `0003_phase3_academics.sql`, `0004_phase4_examinations.sql`,
+   `0005_phase5_finance.sql`, `0006_phase6_portals.sql`,
+   `0007_phase7_enhancements.sql`,
+   `0008_phase8_library_transport_inventory.sql`,
+   `0009_phase9_reports_certificates.sql`,
+   `0010_phase10_security_hardening.sql`) — each depends on tables/
+   functions the previous ones create.
+4. Optionally run `supabase/seed.sql` for the same demo data used in demo
+   mode, so switching over doesn't change what you see. Never run it
+   against a database that already holds real school data.
+5. Copy `.env.example` to `.env.local` (locally) or set the equivalent
+   environment variables in your hosting provider, and fill in your
+   project's URL and anon key. Demo mode turns off automatically once
+   those are set. `SUPABASE_SERVICE_ROLE_KEY` is not currently used by any
+   part of this app — do not set it unless a future feature needs it, and
+   never expose it as a `NEXT_PUBLIC_*` variable if you do.
 
 ## What's implemented (Phase 1 + 2)
 
