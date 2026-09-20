@@ -74,6 +74,27 @@ export function FeeCollectionChart({ data }: { data: { month: string; collected:
 
 const PIE_COLORS = ["#2563eb", "#0d9488", "#d97706", "#7c3aed", "#dc2626", "#0891b2", "#65a30d"];
 
+/** Generic single-series bar chart — {label, value}[] — used by the
+ * Library/Transport/Inventory dashboards (issue/return activity, popular
+ * items, capacity utilization, …) so those modules don't each need their
+ * own bespoke chart component. */
+export function SimpleBarChart({ data, color = "var(--color-primary)", valueLabel }: { data: { label: string; value: number }[]; color?: string; valueLabel?: string }) {
+  return (
+    <ResponsiveContainer width="100%" height={220}>
+      <BarChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+        <CartesianGrid stroke={GRID} strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="label" stroke={AXIS} fontSize={12} tickLine={false} axisLine={false} />
+        <YAxis stroke={AXIS} fontSize={12} tickLine={false} axisLine={false} width={32} />
+        <Tooltip
+          formatter={(v) => [v, valueLabel ?? "Value"]}
+          contentStyle={{ background: "var(--color-surface)", border: `1px solid ${GRID}`, borderRadius: 8, fontSize: 12 }}
+        />
+        <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 export function ClassDistributionChart({ data }: { data: { name: string; value: number }[] }) {
   return (
     <ResponsiveContainer width="100%" height={220}>

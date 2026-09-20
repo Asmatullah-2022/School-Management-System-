@@ -35,6 +35,20 @@ import {
   demoSubjects,
   demoTeachers,
   demoTimetableEntries,
+  demoBooks,
+  demoBookIssues,
+  demoLibraryCategories,
+  demoLibrarySettings,
+  demoDrivers,
+  demoVehicles,
+  demoRoutes,
+  demoRouteStops,
+  demoRouteStudents,
+  demoInventoryCategories,
+  demoInventoryLocations,
+  demoInventory,
+  demoInventoryTransactions,
+  demoAuditLogs,
 } from "./data";
 import { findTimetableConflict, type TimetableCandidate } from "@/lib/timetable/conflicts";
 import { findExamScheduleConflict, type ExamScheduleCandidate } from "@/lib/exams/conflicts";
@@ -76,6 +90,20 @@ import type {
   SubjectAssignment,
   Teacher,
   TimetableEntry,
+  Book,
+  BookIssue,
+  LibraryCategory,
+  LibrarySettings,
+  Driver,
+  Vehicle,
+  Route,
+  RouteStop,
+  StudentTransportAssignment,
+  InventoryCategory,
+  InventoryLocation,
+  InventoryItem,
+  InventoryTransaction,
+  AuditLogEntry,
 } from "@/types/database";
 
 /**
@@ -122,6 +150,20 @@ const globalForDemo = globalThis as unknown as {
     marks: Mark[];
     results: Result[];
     markRevisions: MarkRevision[];
+    books: Book[];
+    bookIssues: BookIssue[];
+    libraryCategories: LibraryCategory[];
+    librarySettings: LibrarySettings;
+    drivers: Driver[];
+    vehicles: Vehicle[];
+    routes: Route[];
+    routeStops: RouteStop[];
+    routeStudents: StudentTransportAssignment[];
+    inventoryCategories: InventoryCategory[];
+    inventoryLocations: InventoryLocation[];
+    inventory: InventoryItem[];
+    inventoryTransactions: InventoryTransaction[];
+    auditLogs: AuditLogEntry[];
   };
 };
 
@@ -162,6 +204,20 @@ function initStore() {
     marks: [...demoMarks],
     results: [...demoResults],
     markRevisions: [...demoMarkRevisions],
+    books: [...demoBooks],
+    bookIssues: [...demoBookIssues],
+    libraryCategories: [...demoLibraryCategories],
+    librarySettings: { ...demoLibrarySettings },
+    drivers: [...demoDrivers],
+    vehicles: [...demoVehicles],
+    routes: [...demoRoutes],
+    routeStops: [...demoRouteStops],
+    routeStudents: [...demoRouteStudents],
+    inventoryCategories: [...demoInventoryCategories],
+    inventoryLocations: [...demoInventoryLocations],
+    inventory: [...demoInventory],
+    inventoryTransactions: [...demoInventoryTransactions],
+    auditLogs: [...demoAuditLogs],
   };
 }
 
@@ -1059,5 +1115,233 @@ export const demoStore = {
     const created: NotificationPreferences = { ...demoStore.getNotificationPreferences(profileId), ...data, id: randomUUID() };
     store.notificationPreferences.push(created);
     return created;
+  },
+
+  // -------------------------------------------------------------------
+  // PHASE 8 — Library
+  // -------------------------------------------------------------------
+  listBooks: () => store.books,
+  getBook: (id: string) => store.books.find((b) => b.id === id),
+  createBook: (data: Omit<Book, "id" | "school_id">) => {
+    const book: Book = { ...data, id: randomUUID(), school_id: store.school.id };
+    store.books.push(book);
+    return book;
+  },
+  updateBook: (id: string, data: Partial<Book>) => {
+    const idx = store.books.findIndex((b) => b.id === id);
+    if (idx === -1) return undefined;
+    store.books[idx] = { ...store.books[idx], ...data, updated_at: new Date().toISOString() };
+    return store.books[idx];
+  },
+  listLibraryCategories: () => store.libraryCategories,
+  createLibraryCategory: (name: string) => {
+    const category: LibraryCategory = { id: randomUUID(), school_id: store.school.id, name };
+    store.libraryCategories.push(category);
+    return category;
+  },
+  getLibrarySettings: () => store.librarySettings,
+  updateLibrarySettings: (data: Partial<Omit<LibrarySettings, "id" | "school_id">>) => {
+    store.librarySettings = { ...store.librarySettings, ...data };
+    return store.librarySettings;
+  },
+  listBookIssues: () => store.bookIssues,
+  getBookIssue: (id: string) => store.bookIssues.find((i) => i.id === id),
+  issueBook: (data: { bookId: string; studentId?: string | null; teacherId?: string | null; dueDate: string; issuedBy: string }) => {
+    const book = store.books.find((b) => b.id === data.bookId);
+    if (!book) throw new Error("Book not found.");
+    if (book.available_copies <= 0) throw new Error("No copies of this book are currently available.");
+    book.available_copies -= 1;
+    const issue: BookIssue = {
+      id: randomUUID(),
+      school_id: store.school.id,
+      book_id: data.bookId,
+      student_id: data.studentId ?? null,
+      teacher_id: data.teacherId ?? null,
+      issue_date: new Date().toISOString().slice(0, 10),
+      due_date: data.dueDate,
+      fine_amount: 0,
+      issued_by: data.issuedBy,
+      status: "issued",
+    };
+    store.bookIssues.push(issue);
+    return issue;
+  },
+  returnBook: (issueId: string, data: { returnedBy: string; condition?: string; remarks?: string; fineAmount: number }) => {
+    const idx = store.bookIssues.findIndex((i) => i.id === issueId);
+    if (idx === -1) throw new Error("Issue record not found.");
+    const issue = store.bookIssues[idx];
+    if (issue.status === "returned") throw new Error("This book has already been returned.");
+    const book = store.books.find((b) => b.id === issue.book_id);
+    if (book) book.available_copies = Math.min(book.available_copies + 1, book.total_copies);
+    store.bookIssues[idx] = {
+      ...issue,
+      return_date: new Date().toISOString().slice(0, 10),
+      returned_by: data.returnedBy,
+      condition_at_return: data.condition ?? null,
+      remarks: data.remarks ?? null,
+      fine_amount: data.fineAmount,
+      status: "returned",
+      updated_at: new Date().toISOString(),
+    };
+    return store.bookIssues[idx];
+  },
+
+  // -------------------------------------------------------------------
+  // PHASE 8 — Transport
+  // -------------------------------------------------------------------
+  listDrivers: () => store.drivers,
+  createDriver: (data: Omit<Driver, "id" | "school_id">) => {
+    const driver: Driver = { ...data, id: randomUUID(), school_id: store.school.id };
+    store.drivers.push(driver);
+    return driver;
+  },
+  updateDriver: (id: string, data: Partial<Driver>) => {
+    const idx = store.drivers.findIndex((d) => d.id === id);
+    if (idx === -1) return undefined;
+    store.drivers[idx] = { ...store.drivers[idx], ...data, updated_at: new Date().toISOString() };
+    return store.drivers[idx];
+  },
+  listVehicles: () => store.vehicles,
+  createVehicle: (data: Omit<Vehicle, "id" | "school_id">) => {
+    const vehicle: Vehicle = { ...data, id: randomUUID(), school_id: store.school.id };
+    store.vehicles.push(vehicle);
+    return vehicle;
+  },
+  updateVehicle: (id: string, data: Partial<Vehicle>) => {
+    const idx = store.vehicles.findIndex((v) => v.id === id);
+    if (idx === -1) return undefined;
+    store.vehicles[idx] = { ...store.vehicles[idx], ...data, updated_at: new Date().toISOString() };
+    return store.vehicles[idx];
+  },
+  listRoutes: () => store.routes,
+  createRoute: (data: Omit<Route, "id" | "school_id">) => {
+    const route: Route = { ...data, id: randomUUID(), school_id: store.school.id };
+    store.routes.push(route);
+    return route;
+  },
+  updateRoute: (id: string, data: Partial<Route>) => {
+    const idx = store.routes.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    store.routes[idx] = { ...store.routes[idx], ...data, updated_at: new Date().toISOString() };
+    return store.routes[idx];
+  },
+  listRouteStops: (routeId?: string) => (routeId ? store.routeStops.filter((s) => s.route_id === routeId) : store.routeStops),
+  createRouteStop: (data: Omit<RouteStop, "id" | "school_id">) => {
+    const stop: RouteStop = { ...data, id: randomUUID(), school_id: store.school.id };
+    store.routeStops.push(stop);
+    return stop;
+  },
+  listRouteStudents: () => store.routeStudents,
+  assignStudentToRoute: (data: { routeId: string; studentId: string; stopId?: string | null; createdBy: string }) => {
+    const route = store.routes.find((r) => r.id === data.routeId);
+    if (!route) throw new Error("Route not found.");
+    const vehicle = store.vehicles.find((v) => v.id === route.vehicle_id);
+    const activeOnRoute = store.routeStudents.filter((rs) => rs.route_id === data.routeId && rs.status === "active" && rs.student_id !== data.studentId);
+    if (vehicle?.capacity != null && activeOnRoute.length + 1 > vehicle.capacity) {
+      throw new Error(`This route's vehicle is at full capacity (${vehicle.capacity}).`);
+    }
+    // A student may only have one active transport assignment at a time.
+    for (const rs of store.routeStudents) {
+      if (rs.student_id === data.studentId && rs.status === "active") {
+        rs.status = "ended";
+        rs.end_date = new Date().toISOString().slice(0, 10);
+      }
+    }
+    const stop = data.stopId ? store.routeStops.find((s) => s.id === data.stopId) : undefined;
+    const assignment: StudentTransportAssignment = {
+      id: randomUUID(),
+      school_id: store.school.id,
+      route_id: data.routeId,
+      student_id: data.studentId,
+      stop_id: data.stopId ?? null,
+      stop_name: stop?.stop_name ?? null,
+      start_date: new Date().toISOString().slice(0, 10),
+      status: "active",
+      created_by: data.createdBy,
+    };
+    store.routeStudents.push(assignment);
+    return assignment;
+  },
+  endRouteAssignment: (id: string) => {
+    const idx = store.routeStudents.findIndex((rs) => rs.id === id);
+    if (idx === -1) return undefined;
+    store.routeStudents[idx] = { ...store.routeStudents[idx], status: "ended", end_date: new Date().toISOString().slice(0, 10) };
+    return store.routeStudents[idx];
+  },
+
+  // -------------------------------------------------------------------
+  // PHASE 8 — Inventory
+  // -------------------------------------------------------------------
+  listInventoryCategories: () => store.inventoryCategories,
+  createInventoryCategory: (name: string) => {
+    const category: InventoryCategory = { id: randomUUID(), school_id: store.school.id, name };
+    store.inventoryCategories.push(category);
+    return category;
+  },
+  listInventoryLocations: () => store.inventoryLocations,
+  createInventoryLocation: (name: string) => {
+    const location: InventoryLocation = { id: randomUUID(), school_id: store.school.id, name };
+    store.inventoryLocations.push(location);
+    return location;
+  },
+  listInventoryItems: () => store.inventory,
+  getInventoryItem: (id: string) => store.inventory.find((i) => i.id === id),
+  createInventoryItem: (data: Omit<InventoryItem, "id" | "school_id">) => {
+    const item: InventoryItem = { ...data, id: randomUUID(), school_id: store.school.id };
+    store.inventory.push(item);
+    return item;
+  },
+  updateInventoryItem: (id: string, data: Partial<InventoryItem>) => {
+    const idx = store.inventory.findIndex((i) => i.id === id);
+    if (idx === -1) return undefined;
+    store.inventory[idx] = { ...store.inventory[idx], ...data, updated_at: new Date().toISOString() };
+    return store.inventory[idx];
+  },
+  listInventoryTransactions: (itemId?: string) =>
+    itemId ? store.inventoryTransactions.filter((t) => t.item_id === itemId) : store.inventoryTransactions,
+  createInventoryTransaction: (data: Omit<InventoryTransaction, "id" | "school_id" | "created_at">) => {
+    const item = store.inventory.find((i) => i.id === data.item_id);
+    if (!item) throw new Error("Inventory item not found.");
+
+    if (data.transaction_type === "stock_in") {
+      item.quantity += data.quantity;
+      item.available_quantity += data.quantity;
+    } else if (data.transaction_type === "stock_out") {
+      if (data.quantity > item.available_quantity) throw new Error(`Cannot stock out ${data.quantity} units — only ${item.available_quantity} available.`);
+      item.quantity -= data.quantity;
+      item.available_quantity -= data.quantity;
+    } else if (data.transaction_type === "assignment" || data.transaction_type === "repair") {
+      if (data.quantity > item.available_quantity) throw new Error(`Cannot assign/send ${data.quantity} units for repair — only ${item.available_quantity} available.`);
+      item.available_quantity -= data.quantity;
+      if (data.transaction_type === "repair") item.condition = "under_repair";
+    } else if (data.transaction_type === "return") {
+      if (item.available_quantity + data.quantity > item.quantity) throw new Error(`Cannot return ${data.quantity} units — would exceed total quantity of ${item.quantity}.`);
+      item.available_quantity += data.quantity;
+    } else if (data.transaction_type === "dispose") {
+      if (data.quantity > item.available_quantity) throw new Error(`Cannot dispose ${data.quantity} units — only ${item.available_quantity} available.`);
+      item.quantity -= data.quantity;
+      item.available_quantity -= data.quantity;
+      if (item.quantity <= 0) {
+        item.status = "disposed";
+        item.condition = "disposed";
+      }
+    } else if (data.transaction_type === "transfer") {
+      if (data.to_location) item.location = data.to_location;
+    }
+    item.updated_at = new Date().toISOString();
+
+    const transaction: InventoryTransaction = { ...data, id: randomUUID(), school_id: store.school.id, created_at: new Date().toISOString() };
+    store.inventoryTransactions.push(transaction);
+    return transaction;
+  },
+
+  // -------------------------------------------------------------------
+  // PHASE 8 — Audit log
+  // -------------------------------------------------------------------
+  listAuditLogs: () => store.auditLogs,
+  createAuditLog: (data: Omit<AuditLogEntry, "id" | "school_id" | "created_at">) => {
+    const entry: AuditLogEntry = { ...data, id: randomUUID(), school_id: store.school.id, created_at: new Date().toISOString() };
+    store.auditLogs.unshift(entry);
+    return entry;
   },
 };

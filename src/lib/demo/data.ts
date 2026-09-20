@@ -36,6 +36,20 @@ import type {
   Teacher,
   TimetableEntry,
   UserRole,
+  Book,
+  BookIssue,
+  LibraryCategory,
+  LibrarySettings,
+  Driver,
+  Vehicle,
+  Route,
+  RouteStop,
+  StudentTransportAssignment,
+  InventoryCategory,
+  InventoryLocation,
+  InventoryItem,
+  InventoryTransaction,
+  AuditLogEntry,
 } from "@/types/database";
 
 export const DEFAULT_GRADING_SYSTEM: GradeBand[] = [
@@ -467,6 +481,97 @@ export const demoEventResponses: EventResponse[] = [
 export const demoEventAttendance: EventAttendanceRecord[] = [];
 
 export const demoNotificationPreferences: NotificationPreferences[] = [];
+
+// =====================================================================
+// PHASE 8 — Library, Transport, Inventory
+// =====================================================================
+
+export const demoLibraryCategories: LibraryCategory[] = [
+  { id: "libcat-eng", school_id: DEMO_SCHOOL_ID, name: "English" },
+  { id: "libcat-urd", school_id: DEMO_SCHOOL_ID, name: "Urdu" },
+  { id: "libcat-math", school_id: DEMO_SCHOOL_ID, name: "Mathematics" },
+  { id: "libcat-sci", school_id: DEMO_SCHOOL_ID, name: "Science" },
+  { id: "libcat-isl", school_id: DEMO_SCHOOL_ID, name: "Islamiat" },
+  { id: "libcat-story", school_id: DEMO_SCHOOL_ID, name: "Story Books" },
+  { id: "libcat-ref", school_id: DEMO_SCHOOL_ID, name: "Reference" },
+  { id: "libcat-gk", school_id: DEMO_SCHOOL_ID, name: "General Knowledge" },
+];
+
+export const demoLibrarySettings: LibrarySettings = {
+  id: "libset-1",
+  school_id: DEMO_SCHOOL_ID,
+  fine_per_day: 10,
+  grace_period_days: 1,
+  max_fine: 500,
+  default_loan_days: 14,
+};
+
+export const demoBooks: Book[] = [
+  { id: "book-1", school_id: DEMO_SCHOOL_ID, title: "Aladdin and the Magic Lamp", title_urdu: "علاؤالدین اور جادوئی چراغ", author: "Anonymous", isbn: "978-0-000-00001", accession_number: "ACC-0001", publisher: "Ferozsons", edition: "1st", category: "Story Books", category_id: "libcat-story", language: "English", publication_year: 2018, total_copies: 4, available_copies: 3, shelf_location: "Rack A-1", price: 350, condition: "good", description: "A classic tale from the Arabian Nights.", status: "active" },
+  { id: "book-2", school_id: DEMO_SCHOOL_ID, title: "Urdu Qaida", title_urdu: "اردو قاعدہ", author: "Dr. Waheed Qureshi", isbn: "978-0-000-00002", accession_number: "ACC-0002", publisher: "Punjab Textbook Board", edition: "3rd", category: "Urdu", category_id: "libcat-urd", language: "Urdu", publication_year: 2020, total_copies: 6, available_copies: 6, shelf_location: "Rack B-2", price: 150, condition: "new", status: "active" },
+  { id: "book-3", school_id: DEMO_SCHOOL_ID, title: "Basic Mathematics for Grade 3", author: "S. Iqbal", isbn: "978-0-000-00003", accession_number: "ACC-0003", publisher: "Oxford University Press", edition: "2nd", category: "Mathematics", category_id: "libcat-math", language: "English", publication_year: 2019, total_copies: 5, available_copies: 5, shelf_location: "Rack C-1", price: 420, condition: "good", status: "active" },
+  { id: "book-4", school_id: DEMO_SCHOOL_ID, title: "Wonders of Science", author: "Dr. Aslam Farrukh", isbn: "978-0-000-00004", accession_number: "ACC-0004", publisher: "Ilmi Kitab Khana", edition: "1st", category: "Science", category_id: "libcat-sci", language: "English", publication_year: 2021, total_copies: 3, available_copies: 3, shelf_location: "Rack D-1", price: 500, condition: "new", status: "active" },
+  { id: "book-5", school_id: DEMO_SCHOOL_ID, title: "Seerat-un-Nabi for Children", title_urdu: "بچوں کے لیے سیرت النبی", author: "Maulana Tariq Jameel", isbn: "978-0-000-00005", accession_number: "ACC-0005", publisher: "Darussalam", edition: "1st", category: "Islamiat", category_id: "libcat-isl", language: "Urdu", publication_year: 2017, total_copies: 4, available_copies: 4, shelf_location: "Rack E-1", price: 300, condition: "fair", status: "active" },
+];
+
+export const demoBookIssues: BookIssue[] = [
+  { id: "issue-1", school_id: DEMO_SCHOOL_ID, book_id: "book-1", student_id: "st-1", issue_date: lastNDays(7)[0], due_date: futureDate(7), fine_amount: 0, issued_by: "u-admin", status: "issued" },
+  { id: "issue-2", school_id: DEMO_SCHOOL_ID, book_id: "book-1", student_id: "st-3", issue_date: lastNDays(20)[0], due_date: lastNDays(6)[0], fine_amount: 0, issued_by: "u-admin", status: "issued" },
+];
+
+export const demoDrivers: Driver[] = [
+  { id: "driver-1", school_id: DEMO_SCHOOL_ID, full_name: "Rasheed Khan", employee_id: "DRV-001", cnic: "35202-1234567-1", mobile: "0301-9876543", license_number: "LHR-2019-4521", license_expiry: futureDate(400), status: "active" },
+  { id: "driver-2", school_id: DEMO_SCHOOL_ID, full_name: "Aslam Butt", employee_id: "DRV-002", cnic: "35202-7654321-2", mobile: "0302-1239876", license_number: "LHR-2020-8842", license_expiry: futureDate(200), status: "active" },
+];
+
+export const demoVehicles: Vehicle[] = [
+  { id: "vehicle-1", school_id: DEMO_SCHOOL_ID, vehicle_number: "LEA-14-1234", vehicle_type: "Van", make_model: "Toyota Hiace", capacity: 20, driver_id: "driver-1", status: "active", start_date: "2023-01-10", insurance_expiry: futureDate(120), fitness_expiry: futureDate(90) },
+  { id: "vehicle-2", school_id: DEMO_SCHOOL_ID, vehicle_number: "LEB-15-5678", vehicle_type: "Bus", make_model: "Hino School Bus", capacity: 40, driver_id: "driver-2", status: "active", start_date: "2022-06-01", insurance_expiry: futureDate(60), fitness_expiry: futureDate(45) },
+];
+
+export const demoRoutes: Route[] = [
+  { id: "route-1", school_id: DEMO_SCHOOL_ID, vehicle_id: "vehicle-1", name: "Model Town Route", route_code: "RT-01", starting_point: "Model Town Park", destination: "School Campus", distance_km: 8.5, estimated_minutes: 25, driver_id: "driver-1", fare: 2000, fee_structure_id: null, status: "active" },
+  { id: "route-2", school_id: DEMO_SCHOOL_ID, vehicle_id: "vehicle-2", name: "Johar Town Route", route_code: "RT-02", starting_point: "Johar Town Chowk", destination: "School Campus", distance_km: 12, estimated_minutes: 35, driver_id: "driver-2", fare: 2500, fee_structure_id: null, status: "active" },
+];
+
+export const demoRouteStops: RouteStop[] = [
+  { id: "stop-1a", school_id: DEMO_SCHOOL_ID, route_id: "route-1", stop_name: "Model Town Park", stop_order: 1, pickup_time: "07:00", dropoff_time: "14:15", location_description: "Main gate of the park" },
+  { id: "stop-1b", school_id: DEMO_SCHOOL_ID, route_id: "route-1", stop_name: "Township Chowk", stop_order: 2, pickup_time: "07:10", dropoff_time: "14:05", location_description: "Near the mosque" },
+  { id: "stop-2a", school_id: DEMO_SCHOOL_ID, route_id: "route-2", stop_name: "Johar Town Chowk", stop_order: 1, pickup_time: "06:50", dropoff_time: "14:25", location_description: "Main chowk" },
+];
+
+export const demoRouteStudents: StudentTransportAssignment[] = [
+  { id: "rs-1", school_id: DEMO_SCHOOL_ID, route_id: "route-1", student_id: "st-1", stop_id: "stop-1a", stop_name: "Model Town Park", start_date: "2025-08-01", status: "active" },
+];
+
+export const demoInventoryCategories: InventoryCategory[] = [
+  { id: "invcat-furniture", school_id: DEMO_SCHOOL_ID, name: "Furniture" },
+  { id: "invcat-computers", school_id: DEMO_SCHOOL_ID, name: "Computers" },
+  { id: "invcat-lab", school_id: DEMO_SCHOOL_ID, name: "Laboratory Equipment" },
+  { id: "invcat-sports", school_id: DEMO_SCHOOL_ID, name: "Sports Equipment" },
+  { id: "invcat-stationery", school_id: DEMO_SCHOOL_ID, name: "Stationery" },
+];
+
+export const demoInventoryLocations: InventoryLocation[] = [
+  { id: "invloc-office", school_id: DEMO_SCHOOL_ID, name: "Office" },
+  { id: "invloc-lab", school_id: DEMO_SCHOOL_ID, name: "Computer Lab" },
+  { id: "invloc-store", school_id: DEMO_SCHOOL_ID, name: "Store Room" },
+  { id: "invloc-1a", school_id: DEMO_SCHOOL_ID, name: "Classroom 1-A" },
+];
+
+export const demoInventory: InventoryItem[] = [
+  { id: "inv-1", school_id: DEMO_SCHOOL_ID, asset_id: "LAP-001", name: "Dell Laptop", category: "Computers", category_id: "invcat-computers", description: "Core i5, 8GB RAM", quantity: 10, available_quantity: 7, purchase_date: "2024-01-15", cost: 85000, supplier: "Dell Pakistan", condition: "good", location: "Computer Lab", location_id: "invloc-lab", status: "active", warranty_expiry: futureDate(300), minimum_stock: 3 },
+  { id: "inv-2", school_id: DEMO_SCHOOL_ID, asset_id: "WBM-001", name: "Whiteboard Marker (Box)", category: "Stationery", category_id: "invcat-stationery", quantity: 20, available_quantity: 4, purchase_date: "2025-06-01", cost: 300, supplier: "Local Stationers", condition: "new", location: "Store Room", location_id: "invloc-store", status: "active", minimum_stock: 10 },
+  { id: "inv-3", school_id: DEMO_SCHOOL_ID, asset_id: "DSK-001", name: "Student Desk", category: "Furniture", category_id: "invcat-furniture", quantity: 60, available_quantity: 55, purchase_date: "2022-03-01", cost: 4500, supplier: "City Furniture Mart", condition: "fair", location: "Classroom 1-A", location_id: "invloc-1a", status: "active", minimum_stock: 5 },
+  { id: "inv-4", school_id: DEMO_SCHOOL_ID, asset_id: "PRJ-001", name: "Projector", category: "Computers", category_id: "invcat-computers", quantity: 3, available_quantity: 2, purchase_date: "2023-09-10", cost: 55000, supplier: "Dell Pakistan", condition: "good", location: "Computer Lab", location_id: "invloc-lab", status: "active", warranty_expiry: futureDate(150), minimum_stock: 1 },
+];
+
+export const demoInventoryTransactions: InventoryTransaction[] = [
+  { id: "invtx-1", school_id: DEMO_SCHOOL_ID, item_id: "inv-1", transaction_type: "stock_in", quantity: 10, performed_by: "u-admin", created_at: "2024-01-15T09:00:00.000Z" },
+  { id: "invtx-2", school_id: DEMO_SCHOOL_ID, item_id: "inv-1", transaction_type: "assignment", quantity: 3, assigned_to_type: "teacher", assigned_to_id: "t-1", assigned_to_label: "Ayesha Siddiqui", reason: "Classroom use", performed_by: "u-admin", created_at: "2024-02-01T09:00:00.000Z" },
+];
+
+export const demoAuditLogs: AuditLogEntry[] = [];
 
 export interface DemoUser {
   profile: Profile;

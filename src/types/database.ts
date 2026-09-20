@@ -564,3 +564,230 @@ export interface NotificationPreferences {
   exam_notifications: boolean;
   result_notifications: boolean;
 }
+
+// =====================================================================
+// PHASE 8 — Library, Transport, Inventory
+// =====================================================================
+
+export type BookCondition = "new" | "good" | "fair" | "damaged";
+export type BookStatus = "active" | "archived";
+export type BookIssueStatus = "issued" | "returned";
+
+export interface LibraryCategory {
+  id: string;
+  school_id: string;
+  name: string;
+  created_at?: string;
+}
+
+export interface LibrarySettings {
+  id: string;
+  school_id: string;
+  fine_per_day: number;
+  grace_period_days: number;
+  max_fine?: number | null;
+  default_loan_days: number;
+  updated_at?: string;
+}
+
+export interface Book {
+  id: string;
+  school_id: string;
+  title: string;
+  title_urdu?: string | null;
+  author?: string | null;
+  isbn?: string | null;
+  accession_number?: string | null;
+  publisher?: string | null;
+  edition?: string | null;
+  category?: string | null;
+  category_id?: string | null;
+  language: string;
+  publication_year?: number | null;
+  total_copies: number;
+  available_copies: number;
+  shelf_location?: string | null;
+  price?: number | null;
+  condition: BookCondition;
+  description?: string | null;
+  cover_image_url?: string | null;
+  status: BookStatus;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface BookIssue {
+  id: string;
+  school_id: string;
+  book_id: string;
+  student_id?: string | null;
+  teacher_id?: string | null;
+  issue_date: string;
+  due_date: string;
+  return_date?: string | null;
+  fine_amount: number;
+  issued_by?: string | null;
+  returned_by?: string | null;
+  condition_at_return?: string | null;
+  remarks?: string | null;
+  status: BookIssueStatus;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type VehicleStatus = "active" | "inactive" | "maintenance";
+export type DriverStatus = "active" | "inactive";
+export type RouteStatus = "active" | "inactive";
+export type TransportAssignmentStatus = "active" | "ended";
+
+export interface Driver {
+  id: string;
+  school_id: string;
+  staff_id?: string | null;
+  full_name: string;
+  employee_id?: string | null;
+  cnic?: string | null;
+  mobile?: string | null;
+  license_number?: string | null;
+  license_expiry?: string | null;
+  status: DriverStatus;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Vehicle {
+  id: string;
+  school_id: string;
+  vehicle_number: string;
+  vehicle_type?: string | null;
+  make_model?: string | null;
+  capacity?: number | null;
+  driver_id?: string | null;
+  status: VehicleStatus;
+  start_date?: string | null;
+  insurance_expiry?: string | null;
+  fitness_expiry?: string | null;
+  notes?: string | null;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Route {
+  id: string;
+  school_id: string;
+  vehicle_id?: string | null;
+  name: string;
+  route_code?: string | null;
+  starting_point?: string | null;
+  destination?: string | null;
+  distance_km?: number | null;
+  estimated_minutes?: number | null;
+  driver_id?: string | null;
+  fare: number;
+  fee_structure_id?: string | null;
+  status: RouteStatus;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface RouteStop {
+  id: string;
+  school_id: string;
+  route_id: string;
+  stop_name: string;
+  stop_order: number;
+  pickup_time?: string | null;
+  dropoff_time?: string | null;
+  location_description?: string | null;
+  created_at?: string;
+}
+
+export interface StudentTransportAssignment {
+  id: string;
+  school_id: string;
+  route_id: string;
+  student_id: string;
+  stop_id?: string | null;
+  stop_name?: string | null;
+  start_date: string;
+  end_date?: string | null;
+  status: TransportAssignmentStatus;
+  created_by?: string | null;
+  updated_at?: string;
+}
+
+export type InventoryCondition = "new" | "good" | "fair" | "damaged" | "under_repair" | "disposed";
+export type InventoryStatus = "active" | "disposed";
+export type InventoryTransactionType = "stock_in" | "stock_out" | "assignment" | "return" | "transfer" | "adjustment" | "repair" | "dispose";
+export type InventoryAssignedToType = "teacher" | "staff" | "department" | "room";
+
+export interface InventoryCategory {
+  id: string;
+  school_id: string;
+  name: string;
+  created_at?: string;
+}
+
+export interface InventoryLocation {
+  id: string;
+  school_id: string;
+  name: string;
+  created_at?: string;
+}
+
+export interface InventoryItem {
+  id: string;
+  school_id: string;
+  asset_id: string;
+  name: string;
+  category?: string | null;
+  category_id?: string | null;
+  description?: string | null;
+  quantity: number;
+  available_quantity: number;
+  purchase_date?: string | null;
+  cost?: number | null;
+  supplier?: string | null;
+  condition: InventoryCondition;
+  location?: string | null;
+  location_id?: string | null;
+  responsible_person?: string | null;
+  status: InventoryStatus;
+  warranty_expiry?: string | null;
+  minimum_stock?: number | null;
+  notes?: string | null;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface InventoryTransaction {
+  id: string;
+  school_id: string;
+  item_id: string;
+  transaction_type: InventoryTransactionType;
+  quantity: number;
+  from_location?: string | null;
+  to_location?: string | null;
+  assigned_to_type?: InventoryAssignedToType | null;
+  assigned_to_id?: string | null;
+  assigned_to_label?: string | null;
+  reason?: string | null;
+  performed_by?: string | null;
+  created_at?: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  school_id: string;
+  profile_id?: string | null;
+  action: string;
+  target_table?: string | null;
+  target_id?: string | null;
+  metadata?: Record<string, unknown>;
+  created_at?: string;
+}
