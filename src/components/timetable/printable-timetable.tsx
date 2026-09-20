@@ -1,5 +1,5 @@
 import { PrintButton } from "./print-button";
-import type { Period, SchoolClass, Section, School, Subject, Teacher, TimetableEntry } from "@/types/database";
+import type { Period, SchoolClass, Section, School, Subject, TeacherDirectoryEntry, TimetableEntry } from "@/types/database";
 
 const DAY_LABELS: Record<number, string> = { 0: "Sunday", 1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thursday", 5: "Friday", 6: "Saturday" };
 
@@ -23,7 +23,7 @@ export function PrintableTimetable({
   periods: Period[];
   entries: TimetableEntry[];
   subjects: Subject[];
-  teachers: Teacher[];
+  teachers: TeacherDirectoryEntry[];
   classes: SchoolClass[];
   sections: Section[];
   secondary: "teacher" | "class";

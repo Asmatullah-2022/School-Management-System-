@@ -5,7 +5,7 @@ import { getSession, isSchoolAdmin } from "@/lib/auth/session";
 import { getTeacherIdForProfile, getStudentIdForProfile, getChildStudentIdsForProfile } from "@/lib/data/people";
 import { listClasses, listSections } from "@/lib/data/academics";
 import { listSubjects } from "@/lib/data/subjects";
-import { listTeachers } from "@/lib/data/teachers";
+import { listTeacherNames } from "@/lib/data/teachers";
 import { listPeriods } from "@/lib/data/periods";
 import { listAssignments } from "@/lib/data/assignments";
 import { listTimetableEntries } from "@/lib/data/timetable";
@@ -34,7 +34,7 @@ export default async function TimetablePage({
     listClasses(),
     listSections(),
     listSubjects(),
-    listTeachers(),
+    listTeacherNames(),
     listPeriods(),
     listAssignments(),
     listTimetableEntries(),

@@ -1,4 +1,4 @@
-import type { SchoolClass, Section, Subject, Teacher, TimetableEntry } from "@/types/database";
+import type { SchoolClass, Section, Subject, TeacherDirectoryEntry, TimetableEntry } from "@/types/database";
 
 /** Read-only cell content: subject + secondary line (teacher, or class/section) + room. */
 export function EntryCell({
@@ -11,7 +11,7 @@ export function EntryCell({
 }: {
   entry: TimetableEntry | undefined;
   subjects: Subject[];
-  teachers: Teacher[];
+  teachers: TeacherDirectoryEntry[];
   classes: SchoolClass[];
   sections: Section[];
   /** What to show on the second line: the teacher's name, or the class/section (for a teacher's own timetable). */

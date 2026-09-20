@@ -11,7 +11,7 @@ import {
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { listStudents, getStudent } from "@/lib/data/students";
-import { listTeachers } from "@/lib/data/teachers";
+import { listTeachers, listTeacherNames } from "@/lib/data/teachers";
 import { listClasses, listSections } from "@/lib/data/academics";
 import { listAttendance, listEvents, listNotices, listHomework } from "@/lib/data/records";
 import { listFees } from "@/lib/data/finance";
@@ -53,7 +53,7 @@ export default async function DashboardPage() {
         listClasses(),
         listSections(),
         listSubjects(),
-        listTeachers(),
+        listTeacherNames(),
         listPeriods(),
         listTimetableEntries(),
         listAttendance(),
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
       listTimetableEntries(),
       listPeriods(),
       listSubjects(),
-      listTeachers(),
+      listTeacherNames(),
       listClasses(),
       listSections(),
       listStudents(),

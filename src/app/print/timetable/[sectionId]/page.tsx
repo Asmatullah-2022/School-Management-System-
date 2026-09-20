@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { listClasses, listSections } from "@/lib/data/academics";
 import { listSubjects } from "@/lib/data/subjects";
-import { listTeachers } from "@/lib/data/teachers";
+import { listTeacherNames } from "@/lib/data/teachers";
 import { listPeriods } from "@/lib/data/periods";
 import { listTimetableEntries } from "@/lib/data/timetable";
 import { getCurrentAcademicSession } from "@/lib/data/sessions";
@@ -17,7 +17,7 @@ export default async function PrintClassTimetablePage({ params }: { params: Prom
     listClasses(),
     listSections(),
     listSubjects(),
-    listTeachers(),
+    listTeacherNames(),
     listPeriods(),
     listTimetableEntries(),
     getCurrentAcademicSession(),

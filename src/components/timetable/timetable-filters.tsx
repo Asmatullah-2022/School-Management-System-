@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import type { SchoolClass, Section, Teacher } from "@/types/database";
+import type { SchoolClass, Section, TeacherDirectoryEntry } from "@/types/database";
 
 export function TimetableFilters({
   classes,
@@ -14,7 +14,7 @@ export function TimetableFilters({
 }: {
   classes: SchoolClass[];
   sections: Section[];
-  teachers: Teacher[];
+  teachers: TeacherDirectoryEntry[];
   view: "class" | "teacher";
   classId: string;
   sectionId: string;

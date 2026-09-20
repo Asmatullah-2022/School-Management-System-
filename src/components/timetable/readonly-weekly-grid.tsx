@@ -2,7 +2,7 @@
 
 import { WeeklyGrid } from "./weekly-grid";
 import { EntryCell } from "./entry-cell";
-import type { Period, SchoolClass, Section, Subject, Teacher, TimetableEntry } from "@/types/database";
+import type { Period, SchoolClass, Section, Subject, TeacherDirectoryEntry, TimetableEntry } from "@/types/database";
 
 /**
  * A read-only WeeklyGrid that builds its own `renderCell` closure internally.
@@ -26,7 +26,7 @@ export function ReadonlyWeeklyGrid({
   periods: Period[];
   entries: TimetableEntry[];
   subjects: Subject[];
-  teachers: Teacher[];
+  teachers: TeacherDirectoryEntry[];
   classes: SchoolClass[];
   sections: Section[];
   secondary: "teacher" | "class";

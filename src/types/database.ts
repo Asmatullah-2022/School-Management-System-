@@ -165,6 +165,14 @@ export interface Teacher {
   status: PersonStatus;
 }
 
+// Minimal, PII-free projection of Teacher for contexts (timetable display,
+// homework/exam listings visible to parents and students) that only need a
+// name to show against a class/period — never CNIC, mobile, email, or
+// address. Keeping these call sites on this narrower type means the full
+// Teacher row (and its PII) is never fetched, so it can never leak into a
+// Client Component's serialized RSC payload for a non-staff viewer.
+export type TeacherDirectoryEntry = Pick<Teacher, "id" | "full_name" | "status">;
+
 export interface Student {
   id: string;
   school_id: string;

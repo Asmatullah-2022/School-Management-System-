@@ -4,10 +4,16 @@ import { isDemoMode, SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/env"
 import { DEMO_SESSION_COOKIE } from "@/lib/auth/session";
 
 const PUBLIC_PATHS = ["/login", "/api"];
+// The service worker, its manifest, and the offline fallback shell must be
+// fetchable without a session — the whole point of the offline shell is
+// that it still loads when the user is logged out or has no connectivity.
+const PUBLIC_FILES = ["/manifest.json", "/sw.js", "/offline.html"];
 
 function isPublic(pathname: string) {
   return (
     PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/")) ||
+    PUBLIC_FILES.includes(pathname) ||
+    pathname.startsWith("/icons/") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico"
   );

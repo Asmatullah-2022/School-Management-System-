@@ -5,7 +5,7 @@ import { Card, CardHeader, EmptyState } from "@/components/ui/card";
 import { WeeklyGrid } from "./weekly-grid";
 import { EntryCell } from "./entry-cell";
 import { TodaySchedule } from "./today-schedule";
-import type { Period, SchoolClass, Section, Student, Subject, Teacher, TimetableEntry } from "@/types/database";
+import type { Period, SchoolClass, Section, Student, Subject, TeacherDirectoryEntry, TimetableEntry } from "@/types/database";
 
 export function ChildTimetableSwitcher({
   childStudents,
@@ -22,7 +22,7 @@ export function ChildTimetableSwitcher({
   classes: SchoolClass[];
   sections: Section[];
   subjects: Subject[];
-  teachers: Teacher[];
+  teachers: TeacherDirectoryEntry[];
   periods: Period[];
   entries: TimetableEntry[];
   workingDays: number[];

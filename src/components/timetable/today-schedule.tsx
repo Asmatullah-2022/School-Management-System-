@@ -1,5 +1,5 @@
 import { Card, CardHeader, EmptyState } from "@/components/ui/card";
-import type { Period, SchoolClass, Section, Subject, Teacher, TimetableEntry } from "@/types/database";
+import type { Period, SchoolClass, Section, Subject, TeacherDirectoryEntry, TimetableEntry } from "@/types/database";
 
 function minutesSinceMidnight(time: string) {
   const [h, m] = time.split(":").map(Number);
@@ -20,7 +20,7 @@ export function TodaySchedule({
   periods: Period[];
   today: number;
   subjects: Subject[];
-  teachers: Teacher[];
+  teachers: TeacherDirectoryEntry[];
   classes: SchoolClass[];
   sections: Section[];
   secondary: "teacher" | "class";

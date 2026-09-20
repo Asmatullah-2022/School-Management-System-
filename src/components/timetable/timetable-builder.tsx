@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { WeeklyGrid } from "./weekly-grid";
-import type { Period, Section, Subject, SubjectAssignment, Teacher, TimetableEntry } from "@/types/database";
+import type { Period, Section, Subject, SubjectAssignment, TeacherDirectoryEntry, TimetableEntry } from "@/types/database";
 import { saveTimetableEntryAction, deleteTimetableEntryAction } from "@/app/(app)/timetable/actions";
 
 const DAY_NAMES: Record<number, string> = {
@@ -29,7 +29,7 @@ export function TimetableBuilder({
   entries: TimetableEntry[];
   assignments: SubjectAssignment[];
   subjects: Subject[];
-  teachers: Teacher[];
+  teachers: TeacherDirectoryEntry[];
   sections: Section[];
 }) {
   const router = useRouter();

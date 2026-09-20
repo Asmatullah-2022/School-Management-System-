@@ -12,7 +12,7 @@ import type {
   Student,
   Subject,
   SubjectAssignment,
-  Teacher,
+  TeacherDirectoryEntry,
   TimetableEntry,
 } from "@/types/database";
 
@@ -43,7 +43,7 @@ export function TeacherDashboard({
   todayEntries: TimetableEntry[];
   periods: Period[];
   subjects: Subject[];
-  teachers: Teacher[];
+  teachers: TeacherDirectoryEntry[];
   classes: SchoolClass[];
   sections: Section[];
   students: Student[];

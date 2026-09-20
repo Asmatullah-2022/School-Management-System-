@@ -15,7 +15,7 @@ import type {
   Section,
   Student,
   Subject,
-  Teacher,
+  TeacherDirectoryEntry,
   TimetableEntry,
 } from "@/types/database";
 
@@ -23,7 +23,7 @@ export interface ChildSummaryContext {
   classes: SchoolClass[];
   sections: Section[];
   subjects: Subject[];
-  teachers: Teacher[];
+  teachers: TeacherDirectoryEntry[];
   periods: Period[];
   timetableEntries: TimetableEntry[];
   attendance: AttendanceRecord[];
