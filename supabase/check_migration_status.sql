@@ -2,7 +2,7 @@
 -- READ-ONLY migration status check.
 --
 -- This repository's migrations (0001-0010) are plain numbered SQL files,
--- not a `supabase init`-scaffolded project — there is no
+-- not a `supabase init`-scaffolded project - there is no
 -- `supabase/config.toml` and no CLI-tracked migration history table.
 -- That means a real production Supabase project has NO built-in record
 -- of which of these files have already been run. Re-running an already
