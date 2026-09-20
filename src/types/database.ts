@@ -42,7 +42,13 @@ export interface School {
   province?: string | null;
   phone?: string | null;
   email?: string | null;
+  website?: string | null;
   principal_name?: string | null;
+  principal_signature_url?: string | null;
+  school_stamp_url?: string | null;
+  headteacher_name?: string | null;
+  document_footer?: string | null;
+  certificate_prefix?: string;
   currency: string;
   is_demo: boolean;
   working_days: number[]; // 0=Sunday .. 6=Saturday
@@ -779,6 +785,44 @@ export interface InventoryTransaction {
   reason?: string | null;
   performed_by?: string | null;
   created_at?: string;
+}
+
+// =====================================================================
+// PHASE 9 — Certificates, templates, cross-module reports
+// =====================================================================
+
+export type CertificateType = "bonafide" | "character" | "leaving" | "transfer" | "result" | "attendance" | "enrollment" | "custom";
+export type CertificateStatus = "issued" | "cancelled";
+
+export interface CertificateTemplate {
+  id: string;
+  school_id: string;
+  name: string;
+  certificate_type: CertificateType;
+  body_template: string;
+  is_custom: boolean;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Certificate {
+  id: string;
+  school_id: string;
+  student_id: string;
+  certificate_type: CertificateType;
+  certificate_number?: string | null;
+  template_id?: string | null;
+  body_text?: string | null;
+  issue_date: string;
+  status: CertificateStatus;
+  issued_by?: string | null;
+  created_by?: string | null;
+  cancelled_by?: string | null;
+  cancelled_at?: string | null;
+  cancellation_reason?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface AuditLogEntry {

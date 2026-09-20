@@ -50,6 +50,8 @@ import type {
   InventoryItem,
   InventoryTransaction,
   AuditLogEntry,
+  Certificate,
+  CertificateTemplate,
 } from "@/types/database";
 
 export const DEFAULT_GRADING_SYSTEM: GradeBand[] = [
@@ -78,6 +80,10 @@ export const demoSchool: School = {
   phone: "042-1234567",
   email: "info@gmps.edu.pk",
   principal_name: "Mr. Muhammad Aslam",
+  website: "https://gmps.edu.pk",
+  headteacher_name: "Mr. Muhammad Aslam",
+  document_footer: "This is a computer-generated document issued by Government Model Primary School.",
+  certificate_prefix: "CERT",
   currency: "PKR",
   is_demo: true,
   working_days: [1, 2, 3, 4, 5, 6], // Monday–Saturday
@@ -572,6 +578,33 @@ export const demoInventoryTransactions: InventoryTransaction[] = [
 ];
 
 export const demoAuditLogs: AuditLogEntry[] = [];
+
+// =====================================================================
+// PHASE 9 — Certificates
+// =====================================================================
+
+export const demoCertificateTemplates: CertificateTemplate[] = [
+  {
+    id: "certtpl-1",
+    school_id: DEMO_SCHOOL_ID,
+    name: "Standard Bonafide Certificate",
+    certificate_type: "bonafide",
+    body_template:
+      "This is to certify that {{student_name}}, son/daughter of {{father_name}}, bearing Admission Number {{admission_number}}, is a bonafide student of {{school_name}}, currently studying in {{class}} - {{section}} during the academic session {{academic_session}}.",
+    is_custom: false,
+  },
+  {
+    id: "certtpl-2",
+    school_id: DEMO_SCHOOL_ID,
+    name: "Standard Character Certificate",
+    certificate_type: "character",
+    body_template:
+      "This is to certify that {{student_name}}, son/daughter of {{father_name}}, Admission Number {{admission_number}}, studied in {{class}} - {{section}} at {{school_name}} during the academic session {{academic_session}}. His/her conduct and character during this period have been found to be satisfactory.",
+    is_custom: false,
+  },
+];
+
+export const demoCertificates: Certificate[] = [];
 
 export interface DemoUser {
   profile: Profile;

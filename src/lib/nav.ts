@@ -117,10 +117,11 @@ export const navSections: NavSection[] = [
     title: "",
     items: [
       { label: "Parents", href: "/modules/parents", icon: UserRound, roles: ADMIN, status: "planned", phase: "Phase 6" },
-      { label: "Certificates", href: "/modules/certificates", icon: Award, roles: ADMIN, status: "planned", phase: "Phase 9" },
+      { label: "Certificate Management", href: "/certificates", icon: Award, roles: STAFF, status: "ready" },
+      { label: "My Certificates", href: "/certificates", icon: Award, roles: ["parent", "student"], status: "ready" },
       { label: "Notices", href: "/notices", icon: Megaphone, roles: ALL, status: "ready" },
       { label: "Events", href: "/events", icon: CalendarDays, roles: ALL, status: "ready" },
-      { label: "Reports", href: "/modules/reports", icon: BarChart3, roles: ADMIN, status: "planned", phase: "Phase 9" },
+      { label: "Reports", href: "/reports", icon: BarChart3, roles: STAFF, status: "ready" },
     ],
   },
   {

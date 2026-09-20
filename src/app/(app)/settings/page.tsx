@@ -1,24 +1,13 @@
 import { getSession, isSchoolAdmin } from "@/lib/auth/session";
 import { Card, CardHeader } from "@/components/ui/card";
 import { GradingForm } from "@/components/settings/grading-form";
-import { updateGradingSystemAction } from "./actions";
+import { DocumentSettingsForm } from "@/components/settings/document-settings-form";
+import { updateGradingSystemAction, updateSchoolSettingsAction } from "./actions";
 
 export default async function SettingsPage() {
   const session = await getSession();
   const school = session?.school;
   const canManage = !!session && isSchoolAdmin(session.profile.role);
-
-  const fields: [string, string | null | undefined][] = [
-    ["School Name", school?.name],
-    ["School Code", school?.school_code],
-    ["Address", school?.address],
-    ["District", school?.district],
-    ["Province", school?.province],
-    ["Phone", school?.phone],
-    ["Email", school?.email],
-    ["Principal / Headteacher", school?.principal_name],
-    ["Currency", school?.currency],
-  ];
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
@@ -28,15 +17,34 @@ export default async function SettingsPage() {
       </div>
 
       <Card>
-        <CardHeader title="School Profile" />
-        <dl className="grid grid-cols-1 gap-x-6 gap-y-4 p-5 sm:grid-cols-2">
-          {fields.map(([label, value]) => (
-            <div key={label}>
-              <dt className="text-xs font-medium uppercase tracking-wide text-muted">{label}</dt>
-              <dd className="mt-0.5 text-sm">{value || "—"}</dd>
-            </div>
-          ))}
-        </dl>
+        <CardHeader title="School Profile & Document Settings" />
+        <div className="p-5">
+          {canManage && school ? (
+            <DocumentSettingsForm school={school} action={updateSchoolSettingsAction} />
+          ) : (
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+              {(
+                [
+                  ["School Name", school?.name],
+                  ["School Code", school?.school_code],
+                  ["Address", school?.address],
+                  ["District", school?.district],
+                  ["Province", school?.province],
+                  ["Phone", school?.phone],
+                  ["Email", school?.email],
+                  ["Website", school?.website],
+                  ["Principal / Headteacher", school?.principal_name],
+                  ["Currency", school?.currency],
+                ] as [string, string | null | undefined][]
+              ).map(([label, value]) => (
+                <div key={label}>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-muted">{label}</dt>
+                  <dd className="mt-0.5 text-sm">{value || "—"}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
       </Card>
 
       {canManage && (
@@ -50,10 +58,6 @@ export default async function SettingsPage() {
           </div>
         </Card>
       )}
-
-      <p className="text-xs text-muted">
-        Editable settings (logo, theme, academic session management) are planned for Phase 9.
-      </p>
     </div>
   );
 }

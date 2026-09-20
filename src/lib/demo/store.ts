@@ -49,6 +49,8 @@ import {
   demoInventory,
   demoInventoryTransactions,
   demoAuditLogs,
+  demoCertificateTemplates,
+  demoCertificates,
 } from "./data";
 import { findTimetableConflict, type TimetableCandidate } from "@/lib/timetable/conflicts";
 import { findExamScheduleConflict, type ExamScheduleCandidate } from "@/lib/exams/conflicts";
@@ -104,6 +106,8 @@ import type {
   InventoryItem,
   InventoryTransaction,
   AuditLogEntry,
+  Certificate,
+  CertificateTemplate,
 } from "@/types/database";
 
 /**
@@ -164,6 +168,8 @@ const globalForDemo = globalThis as unknown as {
     inventory: InventoryItem[];
     inventoryTransactions: InventoryTransaction[];
     auditLogs: AuditLogEntry[];
+    certificateTemplates: CertificateTemplate[];
+    certificates: Certificate[];
   };
 };
 
@@ -218,6 +224,8 @@ function initStore() {
     inventory: [...demoInventory],
     inventoryTransactions: [...demoInventoryTransactions],
     auditLogs: [...demoAuditLogs],
+    certificateTemplates: [...demoCertificateTemplates],
+    certificates: [...demoCertificates],
   };
 }
 
@@ -423,6 +431,10 @@ export const demoStore = {
   },
 
   getSchool: () => store.school,
+  updateSchool: (data: Partial<Omit<School, "id" | "school_code">>) => {
+    store.school = { ...store.school, ...data };
+    return store.school;
+  },
   updateGradingSystem: (bands: GradeBand[]) => {
     store.school.grading_system = bands;
     return store.school;
@@ -1343,5 +1355,39 @@ export const demoStore = {
     const entry: AuditLogEntry = { ...data, id: randomUUID(), school_id: store.school.id, created_at: new Date().toISOString() };
     store.auditLogs.unshift(entry);
     return entry;
+  },
+
+  // -------------------------------------------------------------------
+  // PHASE 9 — Certificates
+  // -------------------------------------------------------------------
+  listCertificateTemplates: () => store.certificateTemplates,
+  createCertificateTemplate: (data: Omit<CertificateTemplate, "id" | "school_id">) => {
+    const template: CertificateTemplate = { ...data, id: randomUUID(), school_id: store.school.id };
+    store.certificateTemplates.push(template);
+    return template;
+  },
+  listCertificates: () => store.certificates,
+  getCertificate: (id: string) => store.certificates.find((c) => c.id === id),
+  nextCertificateNumber: () => {
+    const year = new Date().getFullYear();
+    const count = store.certificates.length + 1;
+    return `${store.school.certificate_prefix ?? "CERT"}-${year}-${String(count).padStart(6, "0")}`;
+  },
+  createCertificate: (data: Omit<Certificate, "id" | "school_id" | "status">) => {
+    const certificate: Certificate = { ...data, id: randomUUID(), school_id: store.school.id, status: "issued" };
+    store.certificates.unshift(certificate);
+    return certificate;
+  },
+  cancelCertificate: (id: string, cancelledBy: string, reason: string) => {
+    const idx = store.certificates.findIndex((c) => c.id === id);
+    if (idx === -1) return undefined;
+    store.certificates[idx] = {
+      ...store.certificates[idx],
+      status: "cancelled",
+      cancelled_by: cancelledBy,
+      cancelled_at: new Date().toISOString(),
+      cancellation_reason: reason,
+    };
+    return store.certificates[idx];
   },
 };
