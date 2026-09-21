@@ -5,6 +5,13 @@ import { loginAsDemoUser } from "@/lib/auth/actions";
 import { roleLabels } from "@/lib/demo/data";
 import { LoginForm } from "@/components/login-form";
 
+// Forces per-request rendering instead of build-time static generation.
+// isDemoMode() reads process.env at render time; without this, Next.js
+// prerenders this page once at build time and bakes in whatever env vars
+// were present during that specific build, ignoring later changes until
+// the next full (non-cached) rebuild.
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
   const demoMode = isDemoMode();
   const demoUsers = demoMode ? listDemoUsers() : [];
